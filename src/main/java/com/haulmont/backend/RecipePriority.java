@@ -1,12 +1,17 @@
 package com.haulmont.backend;
 
-public enum  RecipePriority {
-    STATIM("Немедленный"),
+public enum RecipePriority {
+    NORMAL("Нормальный"),
     CITO("Срочный"),
-    NORMAL("Нормальный");
+    STATIM("Немедленный");
 
-    private  String title;
+    private String title;
+
     RecipePriority(String title) {
         this.title = title;
+    }
+
+    public String getTitle() {
+        return title;
     }
 }

@@ -2,11 +2,20 @@ package com.haulmont.backend;
 
 import java.util.Objects;
 
-public class Doctor extends Man{
+public class Doctor extends Man {
     private String specialization;
 
-    protected Doctor(String name, String lastName, String patronymic) {
+    public String getSpecialization() {
+        return specialization;
+    }
+
+    public void setSpecialization(String specialization) {
+        this.specialization = specialization;
+    }
+
+    public Doctor(String name, String lastName, String patronymic, String specialization) {
         super(name, lastName, patronymic);
+        this.specialization = specialization;
     }
 
     @Override

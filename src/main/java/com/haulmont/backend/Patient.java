@@ -3,10 +3,19 @@ package com.haulmont.backend;
 import java.util.Objects;
 
 public class Patient extends Man {
-    private String phoneNumber;
+    private String phone;
 
-    protected Patient(String name, String lastName, String patronymic) {
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public Patient(String name, String lastName, String patronymic, String phone) {
         super(name, lastName, patronymic);
+        this.phone = phone;
     }
 
     @Override
@@ -17,11 +26,11 @@ public class Patient extends Man {
         return name.equals(patient.name) &&
                 lastName.equals(patient.lastName) &&
                 patronymic.equals(patient.patronymic) &&
-                phoneNumber.equals(patient.phoneNumber);
+                phone.equals(patient.phone);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, lastName, patronymic, phoneNumber);
+        return Objects.hash(name, lastName, patronymic, phone);
     }
 }

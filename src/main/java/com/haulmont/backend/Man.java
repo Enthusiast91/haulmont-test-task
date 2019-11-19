@@ -1,6 +1,7 @@
 package com.haulmont.backend;
 
 public abstract class Man {
+    protected long id;
     protected String name;
     protected String lastName;
     protected final String patronymic;
