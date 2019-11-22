@@ -1,4 +1,4 @@
 package com.haulmont.backend.dao;
 
-public class DoctorDao {
+public class RecipePriorityDao {
 }

@@ -2,16 +2,27 @@ package com.haulmont.backend.dao;
 
 import com.haulmont.backend.Patient;
 
-import java.util.List;
+import java.sql.*;
 
-public interface PatientDao {
-    Patient create();
+public class PatientDao extends AbstractControllerJDBC<Patient> {
 
-    Patient read();
+    @Override
+    protected Patient getTableEntry(ResultSet rs)  throws SQLException{
+        return null;
+    }
 
-    void update(Patient patient);
+    @Override
+    protected ResultSet getResultSetForGetAll(Statement statement) throws SQLException {
+        return null;
+    }
 
-    void delete(Patient patient);
+    @Override
+    protected PreparedStatement getPreparedStatementForGetEntityById(Connection connection, long id)  throws SQLException{
+        return null;
+    }
 
-    List<Patient> getAll();
+    @Override
+    protected PreparedStatement getPreparedStatementForUpdate(Connection connection, long id)  throws SQLException{
+        return null;
+    }
 }

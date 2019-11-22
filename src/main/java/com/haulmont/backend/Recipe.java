@@ -1,22 +1,22 @@
 package com.haulmont.backend;
 
-import java.time.LocalDate;
-import java.time.Period;
-import java.util.Objects;
+import com.haulmont.backend.dao.SQLEntity;
+import java.util.Date;
 
-public class Recipe {
-    private int id;
-    private final int doctorId;
-    private final int patientId;
-    private final String description;
-    private final LocalDate createDate;
-    private final Period validity;
+public class Recipe implements SQLEntity {
+    private final long id;
+    private final long doctorId;
+    private final long patientId;
+    private String description;
+    private Date createDate;
+    private int validity;
+    private RecipePriority priority;
 
-    public int getDoctorId() {
+    public long getDoctorId() {
         return doctorId;
     }
 
-    public int getPatientId() {
+    public long getPatientId() {
         return patientId;
     }
 
@@ -24,36 +24,30 @@ public class Recipe {
         return description;
     }
 
-    public LocalDate getCreateDate() {
+    public Date getCreateDate() {
         return createDate;
     }
 
-    public Period getValidity() {
+    public int getValidity() {
         return validity;
     }
 
-    public Recipe(int doctorId, int patientId, String description, LocalDate createDate, Period validity) {
+    public RecipePriority getPriority() {
+        return priority;
+    }
+
+    public Recipe(long id, long doctorId, long patientId, String description, Date createDate, int validity, RecipePriority priority) {
+        this.id = id;
         this.description = description;
         this.doctorId = doctorId;
         this.patientId = patientId;
         this.createDate = createDate;
         this.validity = validity;
+        this.priority = priority;
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Recipe recipe = (Recipe) o;
-        return doctorId == recipe.doctorId &&
-                patientId == recipe.patientId &&
-                description.equals(recipe.description) &&
-                createDate.equals(recipe.createDate) &&
-                Objects.equals(validity, recipe.validity);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(doctorId, patientId, description, createDate, validity);
+    public long getId() {
+        return id;
     }
 }

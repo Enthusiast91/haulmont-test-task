@@ -19,7 +19,7 @@ CREATE TABLE Doctors (
     specialization VARCHAR(60) NOT NULL
 );
 
-CREATE TABLE RecipePriority (
+CREATE  TABLE RecipePriority (
     id BIGINT IDENTITY PRIMARY KEY,
     priority VARCHAR(10) UNIQUE NOT NULL
 );
@@ -38,7 +38,7 @@ CREATE TABLE Recipes (
     description VARCHAR(1000) NOT NULL,
     creationDate DATE DEFAULT current_date NOT NULL,
     validity INTERVAL DAY,
-    priority BIGINT FOREIGN KEY REFERENCES RecipePriority
+    priorityId BIGINT FOREIGN KEY REFERENCES RecipePriority
 );
 
 INSERT INTO PATIENTS
@@ -63,7 +63,7 @@ VALUES
     ('Александр', 'Чирков', 'Анатольевич', 'Офтальмолог');
 
 INSERT INTO RECIPES
-(DOCTORID, PATIENTID, DESCRIPTION, CREATIONDATE, VALIDITY, PRIORITY)
+(DOCTORID, PATIENTID, DESCRIPTION, CREATIONDATE, VALIDITY, PRIORITYID)
 VALUES
 (0, 0, 'Не бегать в холод без шапки', DEFAULT, '30', 0),
 (0, 3, 'Мазь антибаговая втирать в запястья', '2018-11-19', '30', 1),
