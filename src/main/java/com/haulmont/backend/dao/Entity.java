@@ -1,5 +1,5 @@
 package com.haulmont.backend.dao;
 
-public interface SQLEntity {
+public interface Entity {
     long getId();
 }

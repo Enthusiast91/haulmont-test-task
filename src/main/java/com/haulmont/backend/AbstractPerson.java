@@ -1,8 +1,10 @@
 package com.haulmont.backend;
 
-import com.haulmont.backend.dao.SQLEntity;
+import com.haulmont.backend.dao.Entity;
 
-public abstract class AbstractPerson implements SQLEntity {
+import java.util.Objects;
+
+public abstract class AbstractPerson implements Entity {
     protected final long id;
     protected String name;
     protected String lastName;
@@ -42,5 +44,21 @@ public abstract class AbstractPerson implements SQLEntity {
     @Override
     public long getId() {
         return id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AbstractPerson)) return false;
+        AbstractPerson that = (AbstractPerson) o;
+        return id == that.id &&
+                name.equals(that.name) &&
+                lastName.equals(that.lastName) &&
+                Objects.equals(patronymic, that.patronymic);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, lastName, patronymic);
     }
 }

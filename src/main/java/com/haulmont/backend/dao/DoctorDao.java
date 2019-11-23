@@ -4,7 +4,7 @@ import com.haulmont.backend.Doctor;
 
 import java.sql.*;
 
-public class DoctorDao extends AbstractControllerJDBC<Doctor> {
+public class DoctorDao extends AbstractEntityDAO<Doctor> {
 
     @Override
     protected Doctor getEntity(ResultSet rs) throws SQLException {
@@ -42,7 +42,7 @@ public class DoctorDao extends AbstractControllerJDBC<Doctor> {
     }
 
     @Override
-    protected PreparedStatement getPreparedStatementForCreate(Connection connection, Doctor doctor) throws SQLException {
+    protected PreparedStatement getPreparedStatementForAdd(Connection connection, Doctor doctor) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement(
                 "INSERT INTO DOCTORS (NAME, LASTNAME, PATRONYMIC, SPECIALIZATION) VALUES (?, ?, ?, ?)");
         preparedStatement.setString(1, doctor.getName());

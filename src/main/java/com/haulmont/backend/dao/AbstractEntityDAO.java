@@ -4,8 +4,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractControllerJDBC<E extends SQLEntity> {
-    // Database management system
+public abstract class AbstractEntityDAO<E extends Entity> {
     private static final JDBCDao JDBC = HSQLDBDao.getInstance();
 
     protected abstract E getEntity(ResultSet rs) throws SQLException;
@@ -16,7 +15,7 @@ public abstract class AbstractControllerJDBC<E extends SQLEntity> {
 
     protected abstract PreparedStatement getPreparedStatementForUpdate(Connection connection, E entity) throws SQLException;
 
-    protected abstract PreparedStatement getPreparedStatementForCreate(Connection connection, E entity) throws SQLException;
+    protected abstract PreparedStatement getPreparedStatementForAdd(Connection connection, E entity) throws SQLException;
 
     protected abstract PreparedStatement getPreparedStatementForDelete(Connection connection, Long id) throws SQLException;
 
@@ -48,31 +47,28 @@ public abstract class AbstractControllerJDBC<E extends SQLEntity> {
         return entity;
     }
 
-    public boolean update(E entity) {
+    public void update(E entity) {
         try (PreparedStatement preparedStatement = getPreparedStatementForUpdate(getConnection(), entity)) {
-            return preparedStatement.execute();
+            preparedStatement.execute();
         } catch (SQLException e) {
             printSQLException(e);
         }
-        return false;
     }
 
-    public boolean create(E entity) {
-        try (PreparedStatement preparedStatement = getPreparedStatementForCreate(getConnection(), entity)) {
-            return preparedStatement.execute();
+    public void add(E entity) {
+        try (PreparedStatement preparedStatement = getPreparedStatementForAdd(getConnection(), entity)) {
+            preparedStatement.execute();
         } catch (SQLException e) {
             printSQLException(e);
         }
-        return false;
     }
 
-    public boolean delete(Long id) {
+    public void delete(Long id) {
         try (PreparedStatement preparedStatement = getPreparedStatementForDelete(getConnection(), id)) {
-            return preparedStatement.execute();
+            preparedStatement.execute();
         } catch (SQLException e) {
             printSQLException(e);
         }
-        return false;
     }
 
     protected Connection getConnection() {

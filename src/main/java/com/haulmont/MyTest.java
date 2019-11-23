@@ -1,19 +1,18 @@
+package com.haulmont;
 
 import com.haulmont.backend.Recipe;
 import com.haulmont.backend.RecipePriority;
 
 import java.io.*;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
-public class Test {
-    public static String pathToSQLDBInitFile;
-    public static String url;
-    public static final String userName = "root";
-    public static final String pass = "1234";
-    public static final String jdbcDriver = "org.hsqldb.jdbcDriver";
+public class MyTest {
+    private static String pathToSQLDBInitFile;
+    private static String url;
+    private static final String userName = "root";
+    private static final String pass = "1234";
+    private static final String jdbcDriver = "org.hsqldb.jdbcDriver";
 
     public static void main(String[] args) {
         initJDBCPath();
@@ -72,7 +71,7 @@ public class Test {
         }
     }
 
-    public static void initJDBCPath() {
+    private static void initJDBCPath() {
         String pathToProject = new File("").getAbsolutePath();
         String fSep = System.getProperty("file.separator");
         pathToSQLDBInitFile = pathToProject + fSep + "src" + fSep + "main" + fSep + "resources" + fSep + "db" + fSep + "initDBinline.sql";

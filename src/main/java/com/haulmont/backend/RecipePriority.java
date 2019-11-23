@@ -1,13 +1,8 @@
 package com.haulmont.backend;
 
-import com.haulmont.backend.dao.SQLEntity;
-import org.omg.CORBA.UNKNOWN;
+import com.haulmont.backend.dao.Entity;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-
-public enum RecipePriority implements SQLEntity {
+public enum RecipePriority implements Entity {
     NORMAL("Нормальный"),
     CITO("Срочный"),
     STATIM("Немедленный");

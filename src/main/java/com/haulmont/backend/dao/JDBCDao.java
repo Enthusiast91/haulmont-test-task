@@ -6,4 +6,6 @@ public interface JDBCDao {
     String getUserName();
 
     String getPass();
+
+    String getPathToSQLDBInitFile();
 }

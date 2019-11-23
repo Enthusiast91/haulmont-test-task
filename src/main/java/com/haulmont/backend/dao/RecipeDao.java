@@ -5,7 +5,7 @@ import com.haulmont.backend.RecipePriority;
 
 import java.sql.*;
 
-public class RecipeDao extends AbstractControllerJDBC<Recipe> {
+public class RecipeDao extends AbstractEntityDAO<Recipe> {
 
     @Override
     protected Recipe getEntity(ResultSet rs) throws SQLException {
@@ -14,10 +14,10 @@ public class RecipeDao extends AbstractControllerJDBC<Recipe> {
         long patientID = rs.getLong(3);
         String description = rs.getString(4);
         Date creationDate = rs.getDate(5);
-        int validity = rs.getInt(6);
-        long priority = rs.getLong(7);
+        short validity = rs.getShort(6);
+        long priorityId = rs.getLong(7);
 
-        RecipePriority recipePriority = new RecipePriorityDao().getEntityById(id);
+        RecipePriority recipePriority = new RecipePriorityDao().getEntityById(priorityId);
         return new Recipe(id, doctorId, patientID, description, creationDate, validity, recipePriority);
     }
 
@@ -38,21 +38,21 @@ public class RecipeDao extends AbstractControllerJDBC<Recipe> {
         PreparedStatement preparedStatement = connection.prepareStatement(
                 "UPDATE RECIPES SET DESCRIPTION = ?, VALIDITY = ?, PRIORITYID = ? WHERE ID = ?");
         preparedStatement.setString(1, recipe.getDescription());
-        preparedStatement.setInt(2, recipe.getValidity());
+        preparedStatement.setShort(2, recipe.getValidity());
         preparedStatement.setLong(3, recipe.getPriority().getId());
         preparedStatement.setLong(4, recipe.getId());
         return preparedStatement;
     }
 
     @Override
-    protected PreparedStatement getPreparedStatementForCreate(Connection connection, Recipe recipe) throws SQLException {
+    protected PreparedStatement getPreparedStatementForAdd(Connection connection, Recipe recipe) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement(
                 "INSERT INTO RECIPES (DOCTORID, PATIENTID, DESCRIPTION, CREATIONDATE, VALIDITY, PRIORITYID) VALUES (?, ?, ?, ?, ?, ?)");
         preparedStatement.setLong(1, recipe.getDoctorId());
         preparedStatement.setLong(2, recipe.getPatientId());
         preparedStatement.setString(3, recipe.getDescription());
         preparedStatement.setDate(4, recipe.getCreationDate());
-        preparedStatement.setInt(5, recipe.getValidity());
+        preparedStatement.setShort(5, recipe.getValidity());
         preparedStatement.setLong(6, recipe.getPriority().getId());
         return preparedStatement;
     }

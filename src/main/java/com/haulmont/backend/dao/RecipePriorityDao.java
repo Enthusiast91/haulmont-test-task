@@ -4,7 +4,7 @@ import com.haulmont.backend.RecipePriority;
 
 import java.sql.*;
 
-public class RecipePriorityDao extends AbstractControllerJDBC<RecipePriority> {
+public class RecipePriorityDao extends AbstractEntityDAO<RecipePriority> {
 
     @Override
     protected RecipePriority getEntity(ResultSet rs) throws SQLException {
@@ -25,32 +25,32 @@ public class RecipePriorityDao extends AbstractControllerJDBC<RecipePriority> {
     }
 
     @Override
-    protected PreparedStatement getPreparedStatementForUpdate(Connection connection, RecipePriority recipePriority) throws SQLException {
+    protected PreparedStatement getPreparedStatementForUpdate(Connection connection, RecipePriority recipePriority) {
         return null;
     }
 
     @Override
-    protected PreparedStatement getPreparedStatementForCreate(Connection connection, RecipePriority recipePriority) throws SQLException {
+    protected PreparedStatement getPreparedStatementForAdd(Connection connection, RecipePriority recipePriority) {
         return null;
     }
 
     @Override
-    protected PreparedStatement getPreparedStatementForDelete(Connection connection, Long id) throws SQLException {
+    protected PreparedStatement getPreparedStatementForDelete(Connection connection, Long id) {
         return null;
     }
 
     @Override
-    public boolean update(RecipePriority entity) {
+    public void update(RecipePriority entity) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean create(RecipePriority entity) {
+    public void add(RecipePriority entity) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean delete(Long id) {
+    public void delete(Long id) {
         throw new UnsupportedOperationException();
     }
 }
