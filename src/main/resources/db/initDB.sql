@@ -21,15 +21,16 @@ CREATE TABLE Doctors (
 
 CREATE  TABLE RecipePriority (
     id BIGINT IDENTITY PRIMARY KEY,
-    priority VARCHAR(10) UNIQUE NOT NULL
+    priority VARCHAR(30) UNIQUE NOT NULL,
+    title VARCHAR(30) NOT NULL
 );
 
 INSERT INTO RECIPEPRIORITY
-    (PRIORITY)
+    (PRIORITY, TITLE)
 VALUES
-    ('Normal'),
-    ('Cito'),
-    ('Statim');
+    ('NORMAL', 'Нормальный'),
+    ('CITO', 'Срочный'),
+    ('STATIM', 'Немедленный');
 
 CREATE TABLE Recipes (
     id BIGINT IDENTITY PRIMARY KEY,

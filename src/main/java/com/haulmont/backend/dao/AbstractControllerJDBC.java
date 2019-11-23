@@ -5,9 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractControllerJDBC<E extends SQLEntity> {
-    private static final IDaoFactory DAO_FACTORY = HSQLDBDao.getInstance();
+    // Database management system
+    private static final JDBCDao JDBC = HSQLDBDao.getInstance();
 
-    protected abstract E getTableEntry(ResultSet rs) throws SQLException;
+    protected abstract E getEntity(ResultSet rs) throws SQLException;
 
     protected abstract ResultSet getResultSetForGetAll(Statement statement) throws SQLException;
 
@@ -15,14 +16,18 @@ public abstract class AbstractControllerJDBC<E extends SQLEntity> {
 
     protected abstract PreparedStatement getPreparedStatementForUpdate(Connection connection, E entity) throws SQLException;
 
-    public List<E> getAll() throws SQLException {
+    protected abstract PreparedStatement getPreparedStatementForCreate(Connection connection, E entity) throws SQLException;
+
+    protected abstract PreparedStatement getPreparedStatementForDelete(Connection connection, Long id) throws SQLException;
+
+    public List<E> getAll() {
         List<E> list = null;
         try (Connection connection = getConnection();
              Statement statement = connection.createStatement();
              ResultSet rs = getResultSetForGetAll(statement)) {
             list = new ArrayList<>();
             while (rs.next()) {
-                list.add(getTableEntry(rs));
+                list.add(getEntity(rs));
             }
         } catch (SQLException e) {
             printSQLException(e);
@@ -35,7 +40,7 @@ public abstract class AbstractControllerJDBC<E extends SQLEntity> {
         try (PreparedStatement preparedStatement = getPreparedStatementForGetEntityById(getConnection(), id);
              ResultSet rs = preparedStatement.executeQuery()) {
             if (rs.next()) {
-                entity = getTableEntry(rs);
+                entity = getEntity(rs);
             }
         } catch (SQLException e) {
             printSQLException(e);
@@ -43,35 +48,43 @@ public abstract class AbstractControllerJDBC<E extends SQLEntity> {
         return entity;
     }
 
-    public void update(E entity) {
-        long id = entity.getId();
+    public boolean update(E entity) {
         try (PreparedStatement preparedStatement = getPreparedStatementForUpdate(getConnection(), entity)) {
-            preparedStatement.execute();
+            return preparedStatement.execute();
         } catch (SQLException e) {
             printSQLException(e);
         }
+        return false;
     }
 
+    public boolean create(E entity) {
+        try (PreparedStatement preparedStatement = getPreparedStatementForCreate(getConnection(), entity)) {
+            return preparedStatement.execute();
+        } catch (SQLException e) {
+            printSQLException(e);
+        }
+        return false;
+    }
 
-//
-//    public boolean delete(E id) {
-//
-//    }
-//
-//    public boolean create(E entity) {
-//
-//    }
+    public boolean delete(Long id) {
+        try (PreparedStatement preparedStatement = getPreparedStatementForDelete(getConnection(), id)) {
+            return preparedStatement.execute();
+        } catch (SQLException e) {
+            printSQLException(e);
+        }
+        return false;
+    }
 
-    private Connection getConnection() {
-        String url = DAO_FACTORY.getUrl();
-        String userName = DAO_FACTORY.getUserName();
-        String pass = DAO_FACTORY.getPass();
+    protected Connection getConnection() {
+        String url = JDBC.getUrl();
+        String userName = JDBC.getUserName();
+        String pass = JDBC.getPass();
 
         Connection connection = null;
         try {
             connection = DriverManager.getConnection(url, userName, pass);
         } catch (SQLException e) {
-            e.printStackTrace();
+            printSQLException(e);
         }
         return connection;
     }

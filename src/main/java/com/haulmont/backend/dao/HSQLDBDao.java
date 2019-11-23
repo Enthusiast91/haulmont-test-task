@@ -2,22 +2,14 @@ package com.haulmont.backend.dao;
 
 import java.io.File;
 
-public class HSQLDBDao implements IDaoFactory {
+public class HSQLDBDao implements JDBCDao {
     private final String name = "root";
     private final String pass = "1234";
     //private String pathToSQLDBInitFile;
     private String url;
 
-    private static HSQLDBDao factory;
-
-    private HSQLDBDao() {
-        try {
-            Class.forName("org.hsqldb.jdbcDriver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            System.err.println("Не удалось загурзить дрйвер БД");
-        }
-    }
+    // Database management system
+    private static HSQLDBDao jdbc;
 
     public String getUrl() {
         return url;
@@ -31,12 +23,21 @@ public class HSQLDBDao implements IDaoFactory {
         return pass;
     }
 
-    public static synchronized IDaoFactory getInstance() {
-        if (factory == null) {
-            factory = new HSQLDBDao();
-            factory.initDBPath();
+    public static synchronized JDBCDao getInstance() {
+        if (jdbc == null) {
+            jdbc = new HSQLDBDao();
+            jdbc.initDBPath();
         }
-        return factory;
+        return jdbc;
+    }
+
+    private HSQLDBDao() {
+        try {
+            Class.forName("org.hsqldb.jdbcDriver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            System.err.println("Не удалось загурзить дрйвер БД");
+        }
     }
 
     private void initDBPath() {

@@ -8,7 +8,7 @@ import java.sql.*;
 public class RecipeDao extends AbstractControllerJDBC<Recipe> {
 
     @Override
-    protected Recipe getTableEntry(ResultSet rs) throws SQLException {
+    protected Recipe getEntity(ResultSet rs) throws SQLException {
         long id = rs.getLong(1);
         long doctorId = rs.getLong(2);
         long patientID = rs.getLong(3);
@@ -17,7 +17,8 @@ public class RecipeDao extends AbstractControllerJDBC<Recipe> {
         int validity = rs.getInt(6);
         long priority = rs.getLong(7);
 
-        return new Recipe(id, doctorId, patientID, description, creationDate, validity, );
+        RecipePriority recipePriority = new RecipePriorityDao().getEntityById(id);
+        return new Recipe(id, doctorId, patientID, description, creationDate, validity, recipePriority);
     }
 
     @Override
@@ -34,12 +35,32 @@ public class RecipeDao extends AbstractControllerJDBC<Recipe> {
 
     @Override
     protected PreparedStatement getPreparedStatementForUpdate(Connection connection, Recipe recipe) throws SQLException {
-        long id = recipe.getId();
-        String description = recipe.getDescription();
-        int validity = recipe.getValidity();
-        long priorityId = recipe.getPriority().getId();
-        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE RECIPES SET DESCRIPTION = ?,  WHERE ID = 3;");
+        PreparedStatement preparedStatement = connection.prepareStatement(
+                "UPDATE RECIPES SET DESCRIPTION = ?, VALIDITY = ?, PRIORITYID = ? WHERE ID = ?");
+        preparedStatement.setString(1, recipe.getDescription());
+        preparedStatement.setInt(2, recipe.getValidity());
+        preparedStatement.setLong(3, recipe.getPriority().getId());
+        preparedStatement.setLong(4, recipe.getId());
+        return preparedStatement;
+    }
+
+    @Override
+    protected PreparedStatement getPreparedStatementForCreate(Connection connection, Recipe recipe) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement(
+                "INSERT INTO RECIPES (DOCTORID, PATIENTID, DESCRIPTION, CREATIONDATE, VALIDITY, PRIORITYID) VALUES (?, ?, ?, ?, ?, ?)");
+        preparedStatement.setLong(1, recipe.getDoctorId());
+        preparedStatement.setLong(2, recipe.getPatientId());
+        preparedStatement.setString(3, recipe.getDescription());
+        preparedStatement.setDate(4, recipe.getCreationDate());
+        preparedStatement.setInt(5, recipe.getValidity());
+        preparedStatement.setLong(6, recipe.getPriority().getId());
+        return preparedStatement;
+    }
+
+    @Override
+    protected PreparedStatement getPreparedStatementForDelete(Connection connection, Long id) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM RECIPES WHERE ID = ?");
         preparedStatement.setLong(1, id);
-        return null;
+        return preparedStatement;
     }
 }

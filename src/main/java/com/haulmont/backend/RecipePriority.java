@@ -3,6 +3,10 @@ package com.haulmont.backend;
 import com.haulmont.backend.dao.SQLEntity;
 import org.omg.CORBA.UNKNOWN;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+
 public enum RecipePriority implements SQLEntity {
     NORMAL("Нормальный"),
     CITO("Срочный"),
@@ -22,12 +26,5 @@ public enum RecipePriority implements SQLEntity {
     @Override
     public long getId() {
         return ordinal();
-    }
-
-    public static RecipePriority getById(Long id) {
-        for(RecipePriority e : values()) {
-            if(e.id == id) return e;
-        }
-        return null;
     }
 }

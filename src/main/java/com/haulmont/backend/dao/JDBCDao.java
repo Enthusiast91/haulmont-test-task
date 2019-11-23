@@ -1,6 +1,6 @@
 package com.haulmont.backend.dao;
 
-public interface IDaoFactory {
+public interface JDBCDao {
     String getUrl();
 
     String getUserName();
