@@ -3,18 +3,18 @@ package com.haulmont.backend.dao;
 import com.haulmont.backend.RecipePriority;
 import org.junit.Test;
 
-public class RecipePriorityDaoTest extends AbstractEntityDAOTest {
+public class RecipePriorityDaoTest extends AbstractEntityDAOTest<RecipePriority> {
     public RecipePriorityDaoTest() {
         super(new RecipePriorityDao());
     }
 
     @Override
-    protected Entity getUpdateEntity(Entity entity) {
+    protected RecipePriority getUpdateEntity(RecipePriority entity) {
         return RecipePriority.STATIM;
     }
 
     @Override
-    protected Entity getNewEntity() {
+    protected RecipePriority getNewEntity() {
         return RecipePriority.STATIM;
     }
 

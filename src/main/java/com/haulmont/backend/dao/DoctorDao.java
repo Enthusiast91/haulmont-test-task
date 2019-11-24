@@ -3,18 +3,18 @@ package com.haulmont.backend.dao;
 import com.haulmont.backend.Doctor;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DoctorDao extends AbstractEntityDAO<Doctor> {
 
     @Override
     protected Doctor getEntity(ResultSet rs) throws SQLException {
-        long id = rs.getLong(1);
-        String name = rs.getString(2);
-        String lastName = rs.getString(3);
-        String patronymic = rs.getString(4);
-        String specialization = rs.getString(5);
-
-        return new Doctor(id, name, lastName, patronymic, specialization);
+        return new Doctor(rs.getLong("ID"),
+                rs.getString("NAME"),
+                rs.getString("LASTNAME"),
+                rs.getString("PATRONYMIC"),
+                rs.getString("SPECIALIZATION"));
     }
 
     @Override
@@ -57,5 +57,46 @@ public class DoctorDao extends AbstractEntityDAO<Doctor> {
         PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM DOCTORS WHERE ID = ?");
         preparedStatement.setLong(1, id);
         return preparedStatement;
+    }
+
+    public List<DoctorAndQuantityRecipes> getAllWithCountRecipes() {
+        List<DoctorAndQuantityRecipes> list = null;
+        try (Connection connection = getConnection();
+             Statement statement = connection.createStatement();
+             ResultSet rs = statement.executeQuery(
+                     "SELECT ID, NAME, LASTNAME, PATRONYMIC, SPECIALIZATION, COUNT(*) QTY " +
+                         "FROM DOCTORS D " +
+                         "JOIN RECIPES R " +
+                         "ON D.ID = R.DOCTORID " +
+                         "GROUP BY D.ID")) {
+            list = new ArrayList<>();
+            while (rs.next()) {
+                list.add(getEntityAndQuantityRecipes(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    private DoctorAndQuantityRecipes getEntityAndQuantityRecipes(ResultSet rs) throws SQLException {
+        Doctor doctor = getEntity(rs);
+        int quantityRecipes = rs.getInt("QTY");
+        return new DoctorAndQuantityRecipes(doctor, quantityRecipes);
+    }
+
+    public static class DoctorAndQuantityRecipes {
+        public Doctor doctor;
+        public int quantityRecipes;
+
+        DoctorAndQuantityRecipes(Doctor doctor, int quantityRecipes) {
+            this.doctor = new Doctor(doctor.getId(), doctor.getName(), doctor.getLastName(), doctor.getPatronymic(), doctor.getSpecialization());
+            this.quantityRecipes = quantityRecipes;
+        }
+
+        @Override
+        public String toString() {
+            return doctor + " QTY= " + quantityRecipes;
+        }
     }
 }

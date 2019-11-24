@@ -3,18 +3,20 @@ package com.haulmont.backend.dao;
 import com.haulmont.backend.Patient;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public class PatientDao extends AbstractEntityDAO<Patient> {
 
     @Override
     protected Patient getEntity(ResultSet rs) throws SQLException {
-        long id = rs.getLong(1);
-        String name = rs.getString(2);
-        String lastName = rs.getString(3);
-        String patronymic = rs.getString(4);
-        String phone = rs.getString(5);
-
-        return new Patient(id, name, lastName, patronymic, phone);
+        return new Patient(rs.getLong("ID"),
+                rs.getString("NAME"),
+                rs.getString("LASTNAME"),
+                rs.getString("PATRONYMIC"),
+                rs.getString("PHONE"));
     }
 
     @Override

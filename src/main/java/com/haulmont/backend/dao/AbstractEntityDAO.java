@@ -34,7 +34,7 @@ public abstract class AbstractEntityDAO<E extends Entity> {
         return list;
     }
 
-    public E getEntityById(long id) {
+    public E getById(long id) {
         E entity = null;
         try (PreparedStatement preparedStatement = getPreparedStatementForGetEntityById(getConnection(), id);
              ResultSet rs = preparedStatement.executeQuery()) {

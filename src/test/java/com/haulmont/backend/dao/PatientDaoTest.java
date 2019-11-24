@@ -2,17 +2,14 @@ package com.haulmont.backend.dao;
 
 import com.haulmont.backend.Patient;
 
-import static org.junit.Assert.*;
-
-public class PatientDaoTest extends AbstractEntityDAOTest {
+public class PatientDaoTest extends AbstractEntityDAOTest<Patient> {
 
     public PatientDaoTest() {
         super(new PatientDao());
     }
 
     @Override
-    protected Entity getUpdateEntity(Entity entity) {
-        Patient patient = (Patient) entity;
+    protected Patient getUpdateEntity(Patient patient) {
         patient.setName("UpdateName");
         patient.setLastName("UpdateLastName");
         patient.setPatronymic("UpdatePatronymic");
@@ -21,7 +18,7 @@ public class PatientDaoTest extends AbstractEntityDAOTest {
     }
 
     @Override
-    protected Entity getNewEntity() {
+    protected Patient getNewEntity() {
         String name = "NewName";
         String lastName = "NewLastName";
         String patronymic = "NewPatronymic";

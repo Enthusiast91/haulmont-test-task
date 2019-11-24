@@ -4,21 +4,21 @@ import com.haulmont.backend.Recipe;
 import com.haulmont.backend.RecipePriority;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RecipeDao extends AbstractEntityDAO<Recipe> {
 
     @Override
     protected Recipe getEntity(ResultSet rs) throws SQLException {
-        long id = rs.getLong(1);
-        long doctorId = rs.getLong(2);
-        long patientID = rs.getLong(3);
-        String description = rs.getString(4);
-        Date creationDate = rs.getDate(5);
-        short validity = rs.getShort(6);
-        long priorityId = rs.getLong(7);
-
-        RecipePriority recipePriority = new RecipePriorityDao().getEntityById(priorityId);
-        return new Recipe(id, doctorId, patientID, description, creationDate, validity, recipePriority);
+        RecipePriority recipePriority = new RecipePriorityDao().getById(rs.getLong("PRIORITYID"));
+        return new Recipe(rs.getLong("ID"),
+                rs.getLong("DOCTORID"),
+                rs.getLong("PATIENTID"),
+                rs.getString("DESCRIPTION"),
+                rs.getDate("CREATIONDATE"),
+                rs.getShort("VALIDITY"),
+                recipePriority);
     }
 
     @Override
@@ -62,5 +62,25 @@ public class RecipeDao extends AbstractEntityDAO<Recipe> {
         PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM RECIPES WHERE ID = ?");
         preparedStatement.setLong(1, id);
         return preparedStatement;
+    }
+
+    public List<Recipe> getFiltered(long patientID, long priorityID, String description) {
+        List<Recipe> list = null;
+        String patientFilter = patientID > -1 ? " AND PATIENTID = " + patientID : "";
+        String priorityFilter = priorityID > -1 ? " AND PRIORITYID = " + priorityID : "";
+        String decriptionFilter = description.length() > 0 ? " AND DESCRIPTION LIKE '%" + description + "%'" : "";
+
+        try (Connection connection = getConnection();
+             Statement statement = connection.createStatement();
+             ResultSet rs = statement.executeQuery("SELECT * FROM RECIPES WHERE TRUE " +
+                     patientFilter + priorityFilter + decriptionFilter)) {
+            list = new ArrayList<>();
+            while (rs.next()) {
+                list.add(getEntity(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }

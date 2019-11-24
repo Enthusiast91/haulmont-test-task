@@ -34,7 +34,7 @@ public class Doctor extends AbstractPerson {
 
     @Override
     public String toString() {
-        return String.format("Id= %2d \tName= %s \tLastName= %s \tPatronymic= %s \tSpecialization= %s",
+        return String.format("Id= %2d  \tName= %-12s \tLastName= %-12s \tPatronymic= %-12s \tSpecialization= %-15s",
                 id, name, lastName, patronymic, specialization);
     }
 }

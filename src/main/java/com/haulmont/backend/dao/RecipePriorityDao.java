@@ -8,8 +8,7 @@ public class RecipePriorityDao extends AbstractEntityDAO<RecipePriority> {
 
     @Override
     protected RecipePriority getEntity(ResultSet rs) throws SQLException {
-        String priorityName = rs.getString(2);
-        return RecipePriority.valueOf(priorityName);
+        return RecipePriority.valueOf(rs.getString("PRIORITY"));
     }
 
     @Override

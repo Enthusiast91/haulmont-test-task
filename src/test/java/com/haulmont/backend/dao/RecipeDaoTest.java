@@ -2,20 +2,19 @@ package com.haulmont.backend.dao;
 
 import com.haulmont.backend.Recipe;
 import com.haulmont.backend.RecipePriority;
+import org.junit.Test;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.List;
 
-import static org.junit.Assert.*;
-
-public class RecipeDaoTest extends AbstractEntityDAOTest {
+public class RecipeDaoTest extends AbstractEntityDAOTest<Recipe> {
     public RecipeDaoTest() {
         super(new RecipeDao());
     }
 
     @Override
-    protected Entity getUpdateEntity(Entity entity) {
-        Recipe recipe = (Recipe) entity;
+    protected Recipe getUpdateEntity(Recipe recipe) {
         recipe.setValidity((short) 777);
         recipe.setDescription("New description after update test");
         for (RecipePriority priority : RecipePriority.values()) {
@@ -28,7 +27,7 @@ public class RecipeDaoTest extends AbstractEntityDAOTest {
     }
 
     @Override
-    protected Entity getNewEntity() {
+    protected Recipe getNewEntity() {
         long id = 0;
         long doctorId = 0;
         long patientID = 0;
@@ -38,5 +37,13 @@ public class RecipeDaoTest extends AbstractEntityDAOTest {
         RecipePriority recipePriority = RecipePriority.STATIM;
 
         return new Recipe(id, doctorId, patientID, description, creationDate, validity, recipePriority);
+    }
+
+    @Test
+    public void getFilteredTest() {
+        List<Recipe> recipes = ((RecipeDao) entityDAO).getFiltered(-1, RecipePriority.STATIM.getId(), "");
+        for (Recipe recipe : recipes) {
+            System.out.println(recipe);
+        }
     }
 }
