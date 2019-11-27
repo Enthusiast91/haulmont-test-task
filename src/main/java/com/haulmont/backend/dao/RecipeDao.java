@@ -1,5 +1,7 @@
 package com.haulmont.backend.dao;
 
+import com.haulmont.backend.Doctor;
+import com.haulmont.backend.Patient;
 import com.haulmont.backend.Recipe;
 import com.haulmont.backend.RecipePriority;
 
@@ -12,12 +14,15 @@ public class RecipeDao extends AbstractEntityDAO<Recipe> {
     @Override
     protected Recipe getEntity(ResultSet rs) throws SQLException {
         RecipePriority recipePriority = new RecipePriorityDao().getById(rs.getLong("PRIORITYID"));
+        Doctor doctor = new DoctorDao().getById(rs.getLong("DOCTORID"));
+        Patient patient = new PatientDao().getById(rs.getLong("PATIENTID"));
+
         return new Recipe(rs.getLong("ID"),
-                rs.getLong("DOCTORID"),
-                rs.getLong("PATIENTID"),
                 rs.getString("DESCRIPTION"),
                 rs.getDate("CREATIONDATE"),
                 rs.getShort("VALIDITY"),
+                doctor,
+                patient,
                 recipePriority);
     }
 
@@ -48,8 +53,8 @@ public class RecipeDao extends AbstractEntityDAO<Recipe> {
     protected PreparedStatement getPreparedStatementForAdd(Connection connection, Recipe recipe) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement(
                 "INSERT INTO RECIPES (DOCTORID, PATIENTID, DESCRIPTION, CREATIONDATE, VALIDITY, PRIORITYID) VALUES (?, ?, ?, ?, ?, ?)");
-        preparedStatement.setLong(1, recipe.getDoctorId());
-        preparedStatement.setLong(2, recipe.getPatientId());
+        preparedStatement.setLong(1, recipe.getDoctor().getId());
+        preparedStatement.setLong(2, recipe.getPatient().getId());
         preparedStatement.setString(3, recipe.getDescription());
         preparedStatement.setDate(4, recipe.getCreationDate());
         preparedStatement.setShort(5, recipe.getValidity());
@@ -79,7 +84,7 @@ public class RecipeDao extends AbstractEntityDAO<Recipe> {
                 list.add(getEntity(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            printSQLException(e);
         }
         return list;
     }

@@ -3,16 +3,7 @@ package com.haulmont.backend.dao;
 import org.junit.*;
 
 import static org.junit.Assert.*;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
-import java.util.Scanner;
 
 public abstract class AbstractEntityDAOTest<E extends Entity> {
     protected AbstractEntityDAO<E> entityDAO;
@@ -24,11 +15,6 @@ public abstract class AbstractEntityDAOTest<E extends Entity> {
     protected abstract E getUpdateEntity(E entity);
 
     protected abstract E getNewEntity();
-
-    @Before
-    public void setUp() {
-        initDatabase();
-    }
 
     @Test
     public void getAllTest() {
@@ -83,30 +69,5 @@ public abstract class AbstractEntityDAOTest<E extends Entity> {
         int entitiesSizeAfterDelete = entitiesAfterDelete.size();
         System.out.println("Size after delete = " + entitiesSizeAfterDelete);
         assertEquals(entitiesSize - 1, entitiesSizeAfterDelete);
-    }
-
-    private static void initDatabase() {
-        JDBCDao JDBC = HSQLDBDao.getInstance();
-
-        try (Connection connection = DriverManager.getConnection(JDBC.getUrl(), JDBC.getUserName(), JDBC.getPass());
-             Statement statement = connection.createStatement();
-             BufferedReader sqlFileReader = new BufferedReader(new FileReader(JDBC.getPathToSQLDBInitFile()))) {
-            try {
-                Scanner scanner = new Scanner(sqlFileReader);
-                String sqlLine;
-
-                while (scanner.hasNextLine()) {
-                    sqlLine = scanner.nextLine();
-                    if (sqlLine.endsWith(";")) {
-                        sqlLine = sqlLine.substring(0, sqlLine.length() - 1);
-                    }
-                    statement.execute(sqlLine);
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        } catch (SQLException | IOException e) {
-            e.printStackTrace();
-        }
     }
 }

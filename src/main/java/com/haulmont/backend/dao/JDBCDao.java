@@ -7,5 +7,4 @@ public interface JDBCDao {
 
     String getPass();
 
-    String getPathToSQLDBInitFile();
 }

@@ -4,7 +4,6 @@ import com.haulmont.ui.views.DoctorsView;
 import com.haulmont.ui.views.PatientsView;
 import com.haulmont.ui.views.RecipesView;
 import com.vaadin.navigator.Navigator;
-import com.vaadin.navigator.View;
 import com.vaadin.ui.*;
 
 public class MainLayout extends HorizontalLayout {
@@ -28,23 +27,29 @@ public class MainLayout extends HorizontalLayout {
     }
 
     private Layout createNavigationLayout() {
-        HorizontalLayout outerLayout = new HorizontalLayout();
         VerticalLayout layout = new VerticalLayout();
 
-        Button buttonPatients = new Button("Patients");
-        Button buttonDoctors = new Button("Doctors");
-        Button buttonRecipes = new Button("Recipes");
-        layout.addComponent(buttonPatients);
-        layout.addComponent(buttonDoctors);
-        layout.addComponent(buttonRecipes);
-        layout.setMargin(true);
-
+        Button buttonPatients = new Button("ПАЦИЕНТЫ");
+        Button buttonDoctors = new Button("ВРАЧИ");
+        Button buttonRecipes = new Button("РЕЦЕПТЫ");
+        buttonPatients.setWidth("120px");
+        buttonDoctors.setWidth("120px");
+        buttonRecipes.setWidth("120px");
         buttonPatients.addClickListener(clickEvent -> navigateTo("PatientsView"));
         buttonDoctors.addClickListener(clickEvent -> navigateTo("DoctorsView"));
         buttonRecipes.addClickListener(clickEvent -> navigateTo("RecipesView"));
 
-        outerLayout.addComponent(layout);
-        return outerLayout;
+        layout.addComponent(buttonPatients);
+        layout.addComponent(buttonDoctors);
+        layout.addComponent(buttonRecipes);
+        layout.setMargin(true);
+        layout.setWidth("180px");
+        layout.setComponentAlignment(buttonPatients, Alignment.MIDDLE_CENTER);
+        layout.setComponentAlignment(buttonDoctors, Alignment.MIDDLE_CENTER);
+        layout.setComponentAlignment(buttonRecipes, Alignment.MIDDLE_CENTER);
+
+
+        return layout;
     }
 
     private void navigateTo(String viewId) {

@@ -34,6 +34,8 @@ public abstract class AbstractPerson implements Entity {
         this.patronymic = patronymic;
     }
 
+    public String getFullName() { return lastName + " " + name; }
+
     protected AbstractPerson(long id, String name, String lastName, String patronymic) {
         this.id = id;
         this.name = name;
@@ -51,8 +53,7 @@ public abstract class AbstractPerson implements Entity {
         if (this == o) return true;
         if (!(o instanceof AbstractPerson)) return false;
         AbstractPerson that = (AbstractPerson) o;
-        return id == that.id &&
-                name.equals(that.name) &&
+        return name.equals(that.name) &&
                 lastName.equals(that.lastName) &&
                 Objects.equals(patronymic, that.patronymic);
     }

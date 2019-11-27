@@ -74,7 +74,7 @@ public class DoctorDao extends AbstractEntityDAO<Doctor> {
                 list.add(getEntityAndQuantityRecipes(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            printSQLException(e);
         }
         return list;
     }

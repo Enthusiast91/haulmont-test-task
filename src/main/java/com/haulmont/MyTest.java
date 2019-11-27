@@ -2,6 +2,8 @@ package com.haulmont;
 
 import com.haulmont.backend.Recipe;
 import com.haulmont.backend.RecipePriority;
+import com.haulmont.backend.dao.HSQLDBDao;
+import com.haulmont.backend.dao.JDBCDao;
 
 import java.io.*;
 import java.sql.*;
@@ -27,7 +29,7 @@ public class MyTest {
         try (Connection connection = DriverManager.getConnection(url, userName, pass);
              Statement statement = connection.createStatement()) {
 
-            //initDatabase(statement);
+            initDatabase(statement);
 
 //            ResultSet rs = null;
 //            try {
@@ -50,6 +52,8 @@ public class MyTest {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        System.out.println("finish");
     }
 
     public static void initDatabase(Statement statement) throws SQLException {

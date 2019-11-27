@@ -49,7 +49,7 @@ public class RecipePriorityDao extends AbstractEntityDAO<RecipePriority> {
     }
 
     @Override
-    public void delete(Long id) {
+    public boolean delete(Long id) {
         throw new UnsupportedOperationException();
     }
 }

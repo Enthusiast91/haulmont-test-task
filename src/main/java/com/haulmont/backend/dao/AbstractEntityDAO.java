@@ -63,12 +63,14 @@ public abstract class AbstractEntityDAO<E extends Entity> {
         }
     }
 
-    public void delete(Long id) {
+    public boolean delete(Long id) {
         try (PreparedStatement preparedStatement = getPreparedStatementForDelete(getConnection(), id)) {
             preparedStatement.execute();
         } catch (SQLException e) {
             printSQLException(e);
+            return false;
         }
+        return true;
     }
 
     protected Connection getConnection() {
@@ -85,7 +87,7 @@ public abstract class AbstractEntityDAO<E extends Entity> {
         return connection;
     }
 
-    private void printSQLException(SQLException e) {
+    protected void printSQLException(SQLException e) {
         System.err.println("SQLException " + e.getMessage());
         System.err.println("SQLException SQL state" + e.getSQLState());
         System.err.println("SQLException error code" + e.getErrorCode());

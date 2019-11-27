@@ -7,20 +7,12 @@ import java.util.Objects;
 
 public class Recipe implements Entity {
     private final long id;
-    private final long doctorId;
-    private final long patientId;
     private String description;
     private Date creationDate;
     private short validity;
     private RecipePriority priority;
-
-    public long getDoctorId() {
-        return doctorId;
-    }
-
-    public long getPatientId() {
-        return patientId;
-    }
+    private final Patient patient;
+    private final Doctor doctor;
 
     public String getDescription() {
         return description;
@@ -50,13 +42,31 @@ public class Recipe implements Entity {
         this.priority = priority;
     }
 
-    public Recipe(long id, long doctorId, long patientId, String description, Date creationDate, short validity, RecipePriority priority) {
+    public Patient getPatient() {
+        return new Patient(
+                patient.getId(),
+                patient.getName(),
+                patient.getLastName(),
+                patient.getPatronymic(),
+                patient.getPhone());
+    }
+
+    public Doctor getDoctor() {
+        return new Doctor(
+                doctor.getId(),
+                doctor.getName(),
+                doctor.getLastName(),
+                doctor.getPatronymic(),
+                doctor.getSpecialization());
+    }
+
+    public Recipe(long id, String description, Date creationDate, short validity, Doctor doctor, Patient patient, RecipePriority priority) {
         this.id = id;
         this.description = description;
-        this.doctorId = doctorId;
-        this.patientId = patientId;
         this.creationDate = creationDate;
         this.validity = validity;
+        this.doctor = doctor;
+        this.patient = patient;
         this.priority = priority;
     }
 
@@ -70,9 +80,8 @@ public class Recipe implements Entity {
         if (this == o) return true;
         if (!(o instanceof Recipe)) return false;
         Recipe recipe = (Recipe) o;
-        return id == recipe.id &&
-                doctorId == recipe.doctorId &&
-                patientId == recipe.patientId &&
+        return doctor.getId() == recipe.doctor.getId() &&
+                patient.getId() == recipe.patient.getId() &&
                 validity == recipe.validity &&
                 description.equals(recipe.description) &&
                 creationDate.equals(recipe.creationDate) &&
@@ -81,12 +90,12 @@ public class Recipe implements Entity {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, doctorId, patientId, description, creationDate, validity, priority);
+        return Objects.hash(id, doctor.getId(), patient.getId(), description, creationDate, validity, priority);
     }
 
     @Override
     public String toString() {
         return String.format("Id= %2d \tDoctorId= %2d \tPatientId= %2d \tCreationDate= %s \tValidity= %3d \tPriority= %-8s \tDescription= %s",
-                id, doctorId, patientId, creationDate, validity, priority, description);
+                id, doctor.getId(), patient.getId(), creationDate, validity, priority, description);
     }
 }
