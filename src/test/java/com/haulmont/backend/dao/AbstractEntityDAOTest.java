@@ -8,7 +8,7 @@ import java.util.List;
 public abstract class AbstractEntityDAOTest<E extends Entity> {
     protected AbstractEntityDAO<E> entityDAO;
 
-    AbstractEntityDAOTest(AbstractEntityDAO entityDAO) {
+    AbstractEntityDAOTest(AbstractEntityDAO<E> entityDAO) {
         this.entityDAO = entityDAO;
     }
 
@@ -59,7 +59,7 @@ public abstract class AbstractEntityDAOTest<E extends Entity> {
 
     @Test
     public void deleteTest() {
-        entityDAO.add(getNewEntity());
+        //entityDAO.add(getNewEntity());
         List<E> entities = entityDAO.getAll();
         int entitiesSize = entities.size();
         System.out.println("Delete:\nSize before delete = " + entitiesSize);

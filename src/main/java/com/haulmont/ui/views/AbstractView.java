@@ -1,6 +1,7 @@
 package com.haulmont.ui.views;
 
 import com.haulmont.backend.Patient;
+import com.haulmont.backend.Recipe;
 import com.haulmont.backend.dao.AbstractEntityDAO;
 import com.haulmont.backend.dao.Entity;
 import com.vaadin.data.provider.ListDataProvider;
@@ -9,11 +10,12 @@ import com.vaadin.navigator.View;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
 
+import javax.xml.bind.Binder;
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractView<E extends Entity> extends VerticalLayout implements View {
-    protected final AbstractEntityDAO entityDao;
+    protected final AbstractEntityDAO<E> entityDao;
     protected Grid<E> grid;
     protected List<E> entityList;
     protected E currentEntity = null;
@@ -24,21 +26,18 @@ public abstract class AbstractView<E extends Entity> extends VerticalLayout impl
 
     protected abstract FormLayout createFormLayout(Action action);
 
-    protected abstract void doAdd(E entity);
-
     protected abstract void doUpdate(E entity);
 
     protected abstract E getEntityFromFormLayout(FormLayout formLayout);
 
-    public AbstractView(String labelText, AbstractEntityDAO entityDao) {
+    protected AbstractView(String labelText, AbstractEntityDAO<E> entityDao) {
         this.entityDao = entityDao;
         entityList = entityDao.getAll();
         grid = createGrid();
         Label label = new Label(labelText);
-        ListDataProvider<E> entityListDataProvider = new ListDataProvider<>(entityList);
 
+        grid.setItems(entityList);
         grid.setSizeFull();
-        grid.setDataProvider(entityListDataProvider);
         grid.addItemClickListener(event -> {
             currentEntity = event.getItem();
         });
@@ -98,7 +97,7 @@ public abstract class AbstractView<E extends Entity> extends VerticalLayout impl
         HorizontalLayout layout = new HorizontalLayout();
         HorizontalLayout buttonLayout = new HorizontalLayout();
         Button acceptButton = new Button("ОК");
-        Button cancelButton = new Button("ОТМЕНА");
+        Button cancelButton = new Button("ОТМЕНИТЬ");
         FormLayout formLayout = createFormLayout(action);
 
         window.setResizable(false);
@@ -108,6 +107,7 @@ public abstract class AbstractView<E extends Entity> extends VerticalLayout impl
         buttonLayout.setMargin(new MarginInfo(true, false, false, false));
 
         acceptButton.addClickListener(event -> {
+            Notification.show("AddClickListener");
             E entity = getEntityFromFormLayout(formLayout);
             switch (action) {
                 case ADD:
@@ -127,6 +127,13 @@ public abstract class AbstractView<E extends Entity> extends VerticalLayout impl
         layout.addComponent(formLayout);
         window.setContent(layout);
         return window;
+    }
+
+    private void doAdd(E entity) {
+        entityDao.add(entity);
+        entityList.clear();
+        entityList.addAll(entityDao.getAll());
+        grid.getDataProvider().refreshAll();
     }
 
     protected enum Action {

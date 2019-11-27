@@ -1,9 +1,8 @@
 package com.haulmont.ui.views;
 
-import com.haulmont.backend.Doctor;
 import com.haulmont.backend.Patient;
 import com.haulmont.backend.dao.PatientDao;
-import com.vaadin.shared.ui.MarginInfo;
+import com.vaadin.data.Binder;
 import com.vaadin.ui.*;
 
 public class PatientsView extends AbstractView<Patient> {
@@ -24,7 +23,6 @@ public class PatientsView extends AbstractView<Patient> {
 
     @Override
     protected void addOtherComponents() {
-
     }
 
     @Override
@@ -42,54 +40,33 @@ public class PatientsView extends AbstractView<Patient> {
             phoneField.setValue(currentEntity.getPhone());
         }
 
+        Binder<Patient> binder = new Binder<>();
+        binder.forField(nameField).withValidator(text -> text.length() >= 2, "Error eept").bind(Patient::getName, Patient::setName);
+
         formLayout.addComponents(nameField, lastNameField, patronymicField, phoneField);
         return formLayout;
     }
 
     @Override
-    protected void doAdd(Patient patient) {
-        entityDao.add(patient);
-        entityList.clear();
-        entityList.addAll(entityDao.getAll());
+    protected void doUpdate(Patient patient) {
+        if (currentEntity.equals(patient)) {
+            return;
+        }
+        currentEntity.setName(patient.getName());
+        currentEntity.setLastName(patient.getLastName());
+        currentEntity.setPatronymic(patient.getPatronymic());
+        currentEntity.setPhone(patient.getPhone());
+
+        entityDao.update(currentEntity);
         grid.getDataProvider().refreshAll();
     }
 
     @Override
-    protected void doUpdate(Patient patient) {
-        String name = patient.getName();
-        String lastName = patient.getLastName();
-        String patronymic =patient.getPatronymic();
-        String phone = patient.getPhone();
-
-        boolean isUpdate = false;
-        if (!currentEntity.getName().equals(name)) {
-            currentEntity.setName(name);
-            isUpdate = true;
-        }
-        if (!currentEntity.getLastName().equals(lastName)) {
-            currentEntity.setLastName(lastName);
-            isUpdate = true;
-        }
-        if (!currentEntity.getPatronymic().equals(patronymic)) {
-            currentEntity.setPatronymic(patronymic);
-            isUpdate = true;
-        }
-        if (!currentEntity.getPhone().equals(phone)) {
-            currentEntity.setPhone(phone);
-            isUpdate = true;
-        }
-        if (isUpdate) {
-            entityDao.update(currentEntity);
-            grid.getDataProvider().refreshAll();
-        }
-    }
-
-    @Override
     protected Patient getEntityFromFormLayout(FormLayout formLayout) {
-        String name = ((TextField)formLayout.getComponent(0)).getValue().trim();
-        String lastName = ((TextField)formLayout.getComponent(1)).getValue().trim();
-        String patronymic = ((TextField)formLayout.getComponent(2)).getValue().trim();
-        String phone = ((TextField)formLayout.getComponent(3)).getValue().trim();
+        String name = ((TextField) formLayout.getComponent(0)).getValue().trim();
+        String lastName = ((TextField) formLayout.getComponent(1)).getValue().trim();
+        String patronymic = ((TextField) formLayout.getComponent(2)).getValue().trim();
+        String phone = ((TextField) formLayout.getComponent(3)).getValue().trim();
 
         return new Patient(0, name, lastName, patronymic, phone);
     }

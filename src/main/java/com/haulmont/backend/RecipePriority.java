@@ -2,10 +2,13 @@ package com.haulmont.backend;
 
 import com.haulmont.backend.dao.Entity;
 
+import java.util.List;
+import java.util.Map;
+
 public enum RecipePriority implements Entity {
-    NORMAL("Нормальный"),
-    CITO("Срочный"),
-    STATIM("Немедленный");
+    NORMAL("НОРМАЛЬНЫЙ"),
+    CITO("СРОЧНЫЙ"),
+    STATIM("НЕМЕДЛЕННЫЙ");
 
     private long id;
     private String title;

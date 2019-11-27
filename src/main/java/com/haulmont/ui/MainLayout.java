@@ -23,7 +23,7 @@ public class MainLayout extends HorizontalLayout {
         navigator.addView("PatientsView", new PatientsView());
         navigator.addView("DoctorsView", new DoctorsView());
         navigator.addView("RecipesView", new RecipesView());
-        navigator.navigateTo("PatientsView");
+        navigator.navigateTo("RecipesView");
     }
 
     private Layout createNavigationLayout() {

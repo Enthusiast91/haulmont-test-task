@@ -1,6 +1,7 @@
 package com.haulmont.backend;
 
 import com.haulmont.backend.dao.Entity;
+import com.vaadin.annotations.PropertyId;
 
 import java.util.Objects;
 

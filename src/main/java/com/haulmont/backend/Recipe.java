@@ -11,7 +11,8 @@ public class Recipe implements Entity {
     private Date creationDate;
     private short validity;
     private RecipePriority priority;
-    private final Patient patient;
+
+    private Patient patient;
     private final Doctor doctor;
 
     public String getDescription() {
@@ -43,21 +44,15 @@ public class Recipe implements Entity {
     }
 
     public Patient getPatient() {
-        return new Patient(
-                patient.getId(),
-                patient.getName(),
-                patient.getLastName(),
-                patient.getPatronymic(),
-                patient.getPhone());
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
 
     public Doctor getDoctor() {
-        return new Doctor(
-                doctor.getId(),
-                doctor.getName(),
-                doctor.getLastName(),
-                doctor.getPatronymic(),
-                doctor.getSpecialization());
+        return doctor;
     }
 
     public Recipe(long id, String description, Date creationDate, short validity, Doctor doctor, Patient patient, RecipePriority priority) {

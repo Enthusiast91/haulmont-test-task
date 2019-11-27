@@ -10,28 +10,65 @@ import com.vaadin.ui.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DoctorsView extends VerticalLayout implements View {
+public class DoctorsView extends AbstractView<Doctor> {
+
     public DoctorsView() {
-        setSizeFull();
-        Label label = new Label("ВРАЧИ");
-        Grid<Doctor> grid = new Grid<>();
-        AbstractEntityDAO doctorsDao = new DoctorDao();
-        List doctors = doctorsDao.getAll();
-
-        grid.setSizeFull();
-        grid.setItems(doctors);
-        grid.addColumn(Doctor::getName).setId("DOCTOR_NAME").setCaption("ИМЯ");
-        grid.addColumn(Doctor::getLastName).setId("DOCTOR_LASTNAME").setCaption("ФАМИЛИЯ");
-        grid.addColumn(Doctor::getPatronymic).setId("DOCTOR_PATRONYMIC").setCaption("ОТЧЕСТВО");
-        grid.addColumn(Doctor::getSpecialization).setId("DOCTOR_SPECIALIZATION").setCaption("СПЕЦИАЛИЗАЦИЯ");
-        grid.addComponentColumn(l -> getEditLayout());
-
-        addComponents(label, grid);
-        setExpandRatio(grid, 1);
+        super("ВРАЧИ", new DoctorDao());
     }
 
-    private Layout getEditLayout() {
-        HorizontalLayout hl = new HorizontalLayout();
-        return hl;
+    @Override
+    protected Grid<Doctor> createGrid() {
+        Grid<Doctor> grid = new Grid<>();
+        grid.addColumn(Doctor::getName).setCaption("ИМЯ");
+        grid.addColumn(Doctor::getLastName).setCaption("ФАМИЛИЯ");
+        grid.addColumn(Doctor::getPatronymic).setCaption("ОТЧЕСТВО");
+        grid.addColumn(Doctor::getSpecialization).setCaption("СПЕЦИАЛИЗАЦИЯ");
+        return grid;
+    }
+
+    @Override
+    protected void addOtherComponents() {}
+
+    @Override
+    protected FormLayout createFormLayout(Action action) {
+        FormLayout formLayout = new FormLayout();
+        TextField nameField = new TextField("ИМЯ");
+        TextField lastNameField = new TextField("ФАМИЛИЯ");
+        TextField patronymicField = new TextField("ОТЧЕСТВО");
+        TextField specializationField = new TextField("СПЕЦИАЛИЗАЦИЯ");
+
+        if (action == Action.UPDATE) {
+            nameField.setValue(currentEntity.getName());
+            lastNameField.setValue(currentEntity.getLastName());
+            patronymicField.setValue(currentEntity.getPatronymic());
+            specializationField.setValue(currentEntity.getSpecialization());
+        }
+
+        formLayout.addComponents(nameField, lastNameField, patronymicField, specializationField);
+        return formLayout;
+    }
+
+    @Override
+    protected void doUpdate(Doctor doctor) {
+        if (currentEntity.equals(doctor)) {
+            return;
+        }
+        currentEntity.setName(doctor.getName());
+        currentEntity.setLastName(doctor.getLastName());
+        currentEntity.setPatronymic(doctor.getPatronymic());
+        currentEntity.setSpecialization(doctor.getSpecialization());
+
+        entityDao.update(currentEntity);
+        grid.getDataProvider().refreshAll();
+    }
+
+    @Override
+    protected Doctor getEntityFromFormLayout(FormLayout formLayout) {
+        String name = ((TextField)formLayout.getComponent(0)).getValue().trim();
+        String lastName = ((TextField)formLayout.getComponent(1)).getValue().trim();
+        String patronymic = ((TextField)formLayout.getComponent(2)).getValue().trim();
+        String specialization = ((TextField)formLayout.getComponent(3)).getValue().trim();
+
+        return new Doctor(0, name, lastName, patronymic, specialization);
     }
 }
