@@ -1,8 +1,8 @@
 package com.haulmont.backend;
 
 import com.haulmont.backend.dao.Entity;
-import com.vaadin.annotations.PropertyId;
 
+import java.util.Map;
 import java.util.Objects;
 
 public abstract class AbstractPerson implements Entity {
@@ -35,7 +35,7 @@ public abstract class AbstractPerson implements Entity {
         this.patronymic = patronymic;
     }
 
-    public String getFullName() { return lastName + " " + name; }
+    public String getFullName() { return getName() + " " + getLastName(); }
 
     protected AbstractPerson(long id, String name, String lastName, String patronymic) {
         this.id = id;
@@ -44,9 +44,10 @@ public abstract class AbstractPerson implements Entity {
         this.patronymic = patronymic;
     }
 
-    @Override
-    public long getId() {
-        return id;
+    protected void updateValue(AbstractPerson person) {
+        setName(person.getName());
+        setLastName(person.getLastName());
+        setPatronymic(person.getPatronymic());
     }
 
     @Override

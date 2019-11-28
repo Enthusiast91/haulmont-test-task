@@ -1,8 +1,12 @@
 package com.haulmont.backend;
 
+import com.haulmont.backend.dao.Entity;
+import com.haulmont.ui.components.Validation;
+import com.haulmont.ui.components.Viewable;
+
 import java.util.Objects;
 
-public class Doctor extends AbstractPerson {
+public class Doctor extends AbstractPerson implements Viewable<Doctor> {
     private String specialization;
 
     public String getSpecialization() {
@@ -13,10 +17,30 @@ public class Doctor extends AbstractPerson {
         this.specialization = specialization;
     }
 
+    public static Doctor getEmpty() {
+        return new Doctor(0, "", "", "", "");
+    }
+
     public Doctor(long id, String name, String lastName, String patronymic, String specialization) {
         super(id, name, lastName, patronymic);
         this.specialization = specialization;
     }
+
+    @Override
+    public long getId() {
+        return id;
+    }
+
+    @Override
+    public Doctor getCopy() {
+        return new Doctor(id, name, lastName, patronymic, specialization);
+    }
+
+//    @Override
+//    public void updateValue(Doctor doctor) {
+//        super.updateValue(doctor);
+//        setSpecialization(doctor.getSpecialization());
+//    }
 
     @Override
     public boolean equals(Object o) {

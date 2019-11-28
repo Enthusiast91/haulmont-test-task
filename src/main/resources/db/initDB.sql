@@ -37,7 +37,7 @@ CREATE TABLE Recipes (
     patientId BIGINT FOREIGN KEY REFERENCES Patients,
     description VARCHAR(1000) NOT NULL,
     creationDate DATE DEFAULT current_date NOT NULL,
-    validity SMALLINT NOT NULL,
+    validity INTEGER NOT NULL,
     priorityId BIGINT FOREIGN KEY REFERENCES RecipePriority
 );
 

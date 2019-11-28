@@ -1,8 +1,11 @@
 package com.haulmont.backend;
 
+import com.haulmont.backend.dao.Entity;
+import com.haulmont.ui.components.Viewable;
+
 import java.util.Objects;
 
-public class Patient extends AbstractPerson{
+public class Patient extends AbstractPerson implements Viewable<Patient> {
     private String phone;
 
     public String getPhone() {
@@ -13,9 +16,29 @@ public class Patient extends AbstractPerson{
         this.phone = phone;
     }
 
+    public static Patient getEmpty() {
+        return new Patient(0, "", "", "", "");
+    }
+
     public Patient(long id, String name, String lastName, String patronymic, String phone) {
         super(id, name, lastName, patronymic);
         this.phone = phone;
+    }
+
+//    @Override
+//    public void updateValue(Patient patient) {
+//        super.updateValue(patient);
+//        setPhone(patient.getPhone());
+//    }
+
+    @Override
+    public long getId() {
+        return id;
+    }
+
+    @Override
+    public Patient getCopy(){
+        return new Patient(id, name, lastName, patronymic, phone);
     }
 
     @Override

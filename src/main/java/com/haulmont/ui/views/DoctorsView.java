@@ -1,14 +1,15 @@
 package com.haulmont.ui.views;
 
 import com.haulmont.backend.Doctor;
-import com.haulmont.backend.dao.AbstractEntityDAO;
+import com.haulmont.backend.Patient;
 import com.haulmont.backend.dao.DoctorDao;
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.navigator.View;
+import com.haulmont.backend.dao.Entity;
+import com.haulmont.ui.components.Message;
+import com.haulmont.ui.components.Validation;
+import com.vaadin.data.Binder;
+import com.vaadin.data.ValueProvider;
+import com.vaadin.server.Setter;
 import com.vaadin.ui.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class DoctorsView extends AbstractView<Doctor> {
 
@@ -27,48 +28,48 @@ public class DoctorsView extends AbstractView<Doctor> {
     }
 
     @Override
-    protected void addOtherComponents() {}
-
-    @Override
     protected FormLayout createFormLayout(Action action) {
         FormLayout formLayout = new FormLayout();
         TextField nameField = new TextField("ИМЯ");
         TextField lastNameField = new TextField("ФАМИЛИЯ");
         TextField patronymicField = new TextField("ОТЧЕСТВО");
         TextField specializationField = new TextField("СПЕЦИАЛИЗАЦИЯ");
+        Doctor doctor;
 
-        if (action == Action.UPDATE) {
-            nameField.setValue(currentEntity.getName());
-            lastNameField.setValue(currentEntity.getLastName());
-            patronymicField.setValue(currentEntity.getPatronymic());
-            specializationField.setValue(currentEntity.getSpecialization());
+        if (action == Action.ADD) {
+            doctor = Doctor.getEmpty();
+            binder.setBean(doctor);
         }
+
+        binderForFieldName(nameField, Doctor::getName, Doctor::setName);
+        binderForFieldName(lastNameField, Doctor::getLastName, Doctor::setLastName);
+        binderForFieldName(patronymicField, Doctor::getPatronymic, Doctor::setPatronymic);
+        binder.forField(specializationField)
+                .withValidator(Validation::phoneIsValid, Message.phoneValidationError())
+                .bind(Doctor::getSpecialization, Doctor::setSpecialization);
 
         formLayout.addComponents(nameField, lastNameField, patronymicField, specializationField);
         return formLayout;
     }
 
-    @Override
-    protected void doUpdate(Doctor doctor) {
-        if (currentEntity.equals(doctor)) {
-            return;
-        }
-        currentEntity.setName(doctor.getName());
-        currentEntity.setLastName(doctor.getLastName());
-        currentEntity.setPatronymic(doctor.getPatronymic());
-        currentEntity.setSpecialization(doctor.getSpecialization());
-
-        entityDao.update(currentEntity);
-        grid.getDataProvider().refreshAll();
+    private void binderForFieldName(TextField field, ValueProvider<Doctor, String> getter, Setter<Doctor, String> setter) {
+        binder.forField(field)
+                .withValidator(Validation::namedIsValid, Message.nameValidationError())
+                .bind(getter, setter);
     }
 
     @Override
-    protected Doctor getEntityFromFormLayout(FormLayout formLayout) {
-        String name = ((TextField)formLayout.getComponent(0)).getValue().trim();
-        String lastName = ((TextField)formLayout.getComponent(1)).getValue().trim();
-        String patronymic = ((TextField)formLayout.getComponent(2)).getValue().trim();
-        String specialization = ((TextField)formLayout.getComponent(3)).getValue().trim();
+    protected void addOtherComponents() {
+        Button buttonStatictics = new Button("Показать статистику");
+        buttonStatictics.addClickListener(event -> {
 
-        return new Doctor(0, name, lastName, patronymic, specialization);
+        });
     }
+
+    private Window createStatisticsWindow() {
+        Window window = new Window();
+
+        return window;
+    }
+
 }

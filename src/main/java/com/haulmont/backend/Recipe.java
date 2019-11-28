@@ -1,19 +1,21 @@
 package com.haulmont.backend;
 
 import com.haulmont.backend.dao.Entity;
+import com.haulmont.ui.components.Viewable;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.Objects;
 
-public class Recipe implements Entity {
+
+public class Recipe implements Entity, Viewable<Recipe> {
     private final long id;
     private String description;
     private Date creationDate;
-    private short validity;
+    private int validity;
     private RecipePriority priority;
-
     private Patient patient;
-    private final Doctor doctor;
+    private Doctor doctor;
 
     public String getDescription() {
         return description;
@@ -27,11 +29,15 @@ public class Recipe implements Entity {
         return creationDate;
     }
 
-    public short getValidity() {
+    public void setCreationDate(LocalDate creationDate) {
+        this.creationDate = Date.valueOf(creationDate);
+    }
+
+    public int getValidity() {
         return validity;
     }
 
-    public void setValidity(short validity) {
+    public void setValidity(int validity) {
         this.validity = validity;
     }
 
@@ -55,7 +61,15 @@ public class Recipe implements Entity {
         return doctor;
     }
 
-    public Recipe(long id, String description, Date creationDate, short validity, Doctor doctor, Patient patient, RecipePriority priority) {
+    public void setDoctor(Doctor doctor) {
+        this.doctor = doctor;
+    }
+
+    public static Recipe getEmpty() {
+        return new Recipe(0, "", Date.valueOf(LocalDate.now()), (short) 0, null, null, null);
+    }
+
+    public Recipe(long id, String description, Date creationDate, int validity, Doctor doctor, Patient patient, RecipePriority priority) {
         this.id = id;
         this.description = description;
         this.creationDate = creationDate;
@@ -71,26 +85,43 @@ public class Recipe implements Entity {
     }
 
     @Override
+    public Recipe getCopy() {
+        return new Recipe(id, description, creationDate, validity, doctor, patient, priority);
+    }
+
+//    @Override
+//    public void updateValue(Recipe recipe) {
+//        setDescription(recipe.getDescription());
+//        setDoctor(recipe.getDoctor());
+//        setPriority(recipe.getPriority());
+//        setValidity(recipe.getValidity());
+//    }
+
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Recipe)) return false;
         Recipe recipe = (Recipe) o;
-        return doctor.getId() == recipe.doctor.getId() &&
-                patient.getId() == recipe.patient.getId() &&
+        return id == recipe.id &&
                 validity == recipe.validity &&
-                description.equals(recipe.description) &&
-                creationDate.equals(recipe.creationDate) &&
-                priority == recipe.priority;
+                Objects.equals(description, recipe.description) &&
+                Objects.equals(creationDate, recipe.creationDate) &&
+                priority == recipe.priority &&
+                Objects.equals(patient, recipe.patient) &&
+                Objects.equals(doctor, recipe.doctor);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, doctor.getId(), patient.getId(), description, creationDate, validity, priority);
+        return Objects.hash(id, description, creationDate, validity, priority, patient, doctor);
     }
 
     @Override
     public String toString() {
+        long patientId = patient == null ? -1 : patient.getId();
+        long doctorId = patient == null ? -1 : patient.getId();
         return String.format("Id= %2d \tDoctorId= %2d \tPatientId= %2d \tCreationDate= %s \tValidity= %3d \tPriority= %-8s \tDescription= %s",
-                id, doctor.getId(), patient.getId(), creationDate, validity, priority, description);
+                id, doctorId, patientId, creationDate, validity, priority, description);
     }
 }

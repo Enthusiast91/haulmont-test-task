@@ -1,24 +1,24 @@
 package com.haulmont.ui.views;
 
-import com.haulmont.backend.Patient;
-import com.haulmont.backend.Recipe;
 import com.haulmont.backend.dao.AbstractEntityDAO;
 import com.haulmont.backend.dao.Entity;
-import com.vaadin.data.provider.ListDataProvider;
+import com.haulmont.ui.components.Viewable;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.navigator.View;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
 
-import javax.xml.bind.Binder;
-import java.util.ArrayList;
-import java.util.List;
+import com.vaadin.data.Binder;
 
-public abstract class AbstractView<E extends Entity> extends VerticalLayout implements View {
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public abstract class AbstractView<E extends Viewable<E>> extends VerticalLayout implements View {
     protected final AbstractEntityDAO<E> entityDao;
+    protected List<E> entityMap;
+    protected Binder<E> binder;
     protected Grid<E> grid;
-    protected List<E> entityList;
-    protected E currentEntity = null;
 
     protected abstract Grid<E> createGrid();
 
@@ -26,21 +26,16 @@ public abstract class AbstractView<E extends Entity> extends VerticalLayout impl
 
     protected abstract FormLayout createFormLayout(Action action);
 
-    protected abstract void doUpdate(E entity);
-
-    protected abstract E getEntityFromFormLayout(FormLayout formLayout);
-
     protected AbstractView(String labelText, AbstractEntityDAO<E> entityDao) {
         this.entityDao = entityDao;
-        entityList = entityDao.getAll();
+        entityMap = entityDao.getAll();
+        binder = new Binder<>();
         grid = createGrid();
         Label label = new Label(labelText);
 
-        grid.setItems(entityList);
+        grid.setItems(entityMap);
         grid.setSizeFull();
-        grid.addItemClickListener(event -> {
-            currentEntity = event.getItem();
-        });
+        grid.addItemClickListener(event -> binder.setBean(event.getItem()));
 
         setSizeFull();
         addComponents(label, getToolsLayout());
@@ -56,11 +51,13 @@ public abstract class AbstractView<E extends Entity> extends VerticalLayout impl
         Button buttonRemove = createToolButton(VaadinIcons.CLOSE, "УДАЛИТЬ");
 
         buttonAdd.addClickListener(event -> {
+            binder.removeBean();
+            grid.deselectAll();
             getUI().addWindow(createWindowForm(Action.ADD));
         });
 
         buttonEdit.addClickListener(event -> {
-            if (currentEntity == null) {
+            if (binder.getBean() == null) {
                 Notification.show("Пожалуйста выберите строку");
                 return;
             }
@@ -68,15 +65,17 @@ public abstract class AbstractView<E extends Entity> extends VerticalLayout impl
         });
 
         buttonRemove.addClickListener(event -> {
-            if (currentEntity == null) {
+            E entity = binder.getBean();
+            if (entity == null) {
                 Notification.show("Пожалуйста выберите строку");
                 return;
             }
-            if (!entityDao.delete(currentEntity.getId())) {
-                Notification.show("Не может быть удален! Данный пациент связан с записью в списке рецептов.").setDelayMsec(2500);
+            if (!entityDao.delete(entity.getId())) {
+                Notification.show("Не может быть удален! Данный пациент связан с записью в базе данных.").setDelayMsec(2500);
                 return;
             }
-            entityList.remove(currentEntity);
+            entityMap.remove(entity);
+            binder.removeBean();
             grid.getDataProvider().refreshAll();
         });
 
@@ -93,7 +92,7 @@ public abstract class AbstractView<E extends Entity> extends VerticalLayout impl
     }
 
     private Window createWindowForm(Action action) {
-        Window window = new Window("");
+        Window window = new Window();
         HorizontalLayout layout = new HorizontalLayout();
         HorizontalLayout buttonLayout = new HorizontalLayout();
         Button acceptButton = new Button("ОК");
@@ -106,21 +105,35 @@ public abstract class AbstractView<E extends Entity> extends VerticalLayout impl
         formLayout.setMargin(true);
         buttonLayout.setMargin(new MarginInfo(true, false, false, false));
 
+        E selectedEntity = binder.getBean().getCopy();
+
         acceptButton.addClickListener(event -> {
-            Notification.show("AddClickListener");
-            E entity = getEntityFromFormLayout(formLayout);
-            switch (action) {
-                case ADD:
-                    doAdd(entity);
-                    break;
-                case UPDATE:
-                    doUpdate(entity);
-                    break;
+//            Notification.show(binder.getBean() + "").setDelayMsec(3000);/////////////////////////////////////////////////////
+            if (binder.isValid()) {
+                switch (action) {
+                    case ADD:
+                        doAdd(binder.getBean());
+                        binder.removeBean();
+                        break;
+                    case UPDATE:
+                        if(!doUpdate(selectedEntity)) {
+                            Notification.show("Данные идентичны");
+                            return;
+                        }
+                        break;
+                }
+                window.close();
+            } else {
+                Notification.show("Введены некорректные данные").setDelayMsec(600);
+            }
+        });
+
+        cancelButton.addClickListener(event -> {
+            if (action == Action.ADD) {
+                binder.removeBean();
             }
             window.close();
         });
-
-        cancelButton.addClickListener(event -> window.close());
 
         buttonLayout.addComponents(acceptButton, cancelButton);
         formLayout.addComponent(buttonLayout);
@@ -131,11 +144,25 @@ public abstract class AbstractView<E extends Entity> extends VerticalLayout impl
 
     private void doAdd(E entity) {
         entityDao.add(entity);
-        entityList.clear();
-        entityList.addAll(entityDao.getAll());
+        entityMap.clear();
+        entityMap.addAll(entityDao.getAll());
         grid.getDataProvider().refreshAll();
     }
 
+    protected boolean doUpdate(E oldEntity) {
+        E entity = binder.getBean();
+        if (entity.equals(oldEntity)) {
+            return false;
+        }
+        entityDao.update(binder.getBean());
+
+        entityMap = entityDao.getAll();     // Костыль
+        grid.setItems(entityMap);           // Костыль
+        binder.removeBean();                // Костыль
+
+        grid.getDataProvider().refreshAll();
+        return true;
+    }
     protected enum Action {
         ADD,
         UPDATE

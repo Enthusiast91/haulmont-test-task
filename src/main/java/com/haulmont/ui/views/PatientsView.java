@@ -2,7 +2,10 @@ package com.haulmont.ui.views;
 
 import com.haulmont.backend.Patient;
 import com.haulmont.backend.dao.PatientDao;
-import com.vaadin.data.Binder;
+import com.haulmont.ui.components.Message;
+import com.haulmont.ui.components.Validation;
+import com.vaadin.data.ValueProvider;
+import com.vaadin.server.Setter;
 import com.vaadin.ui.*;
 
 public class PatientsView extends AbstractView<Patient> {
@@ -22,52 +25,37 @@ public class PatientsView extends AbstractView<Patient> {
     }
 
     @Override
-    protected void addOtherComponents() {
-    }
-
-    @Override
     protected FormLayout createFormLayout(Action action) {
         FormLayout formLayout = new FormLayout();
         TextField nameField = new TextField("ИМЯ");
         TextField lastNameField = new TextField("ФАМИЛИЯ");
         TextField patronymicField = new TextField("ОТЧЕСТВО");
         TextField phoneField = new TextField("ТЕЛЕФОН");
+        Patient patient;
 
-        if (action == Action.UPDATE) {
-            nameField.setValue(currentEntity.getName());
-            lastNameField.setValue(currentEntity.getLastName());
-            patronymicField.setValue(currentEntity.getPatronymic());
-            phoneField.setValue(currentEntity.getPhone());
+        if (action == Action.ADD) {
+            patient = Patient.getEmpty();
+            binder.setBean(patient);
         }
 
-        Binder<Patient> binder = new Binder<>();
-        binder.forField(nameField).withValidator(text -> text.length() >= 2, "Error eept").bind(Patient::getName, Patient::setName);
+        binderForFieldName(nameField, Patient::getName, Patient::setName);
+        binderForFieldName(lastNameField, Patient::getLastName, Patient::setLastName);
+        binderForFieldName(patronymicField, Patient::getPatronymic, Patient::setPatronymic);
+        binder.forField(phoneField)
+                .withValidator(Validation::phoneIsValid, Message.phoneValidationError())
+                .bind(Patient::getPhone, Patient::setPhone);
 
         formLayout.addComponents(nameField, lastNameField, patronymicField, phoneField);
         return formLayout;
     }
 
-    @Override
-    protected void doUpdate(Patient patient) {
-        if (currentEntity.equals(patient)) {
-            return;
-        }
-        currentEntity.setName(patient.getName());
-        currentEntity.setLastName(patient.getLastName());
-        currentEntity.setPatronymic(patient.getPatronymic());
-        currentEntity.setPhone(patient.getPhone());
-
-        entityDao.update(currentEntity);
-        grid.getDataProvider().refreshAll();
+    private void binderForFieldName(TextField field, ValueProvider<Patient, String> getter, Setter<Patient, String> setter) {
+        binder.forField(field)
+                .withValidator(Validation::namedIsValid, Message.nameValidationError())
+                .bind(getter, setter);
     }
 
     @Override
-    protected Patient getEntityFromFormLayout(FormLayout formLayout) {
-        String name = ((TextField) formLayout.getComponent(0)).getValue().trim();
-        String lastName = ((TextField) formLayout.getComponent(1)).getValue().trim();
-        String patronymic = ((TextField) formLayout.getComponent(2)).getValue().trim();
-        String phone = ((TextField) formLayout.getComponent(3)).getValue().trim();
-
-        return new Patient(0, name, lastName, patronymic, phone);
+    protected void addOtherComponents() {
     }
 }

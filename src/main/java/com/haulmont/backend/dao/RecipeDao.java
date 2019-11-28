@@ -13,14 +13,14 @@ public class RecipeDao extends AbstractEntityDAO<Recipe> {
 
     @Override
     protected Recipe getEntity(ResultSet rs) throws SQLException {
-        RecipePriority recipePriority = new RecipePriorityDao().getById(rs.getLong("PRIORITYID"));
-        Doctor doctor = new DoctorDao().getById(rs.getLong("DOCTORID"));
         Patient patient = new PatientDao().getById(rs.getLong("PATIENTID"));
+        Doctor doctor = new DoctorDao().getById(rs.getLong("DOCTORID"));
+        RecipePriority recipePriority = new RecipePriorityDao().getById(rs.getLong("PRIORITYID"));
 
         return new Recipe(rs.getLong("ID"),
                 rs.getString("DESCRIPTION"),
                 rs.getDate("CREATIONDATE"),
-                rs.getShort("VALIDITY"),
+                rs.getInt("VALIDITY"),
                 doctor,
                 patient,
                 recipePriority);
@@ -41,23 +41,26 @@ public class RecipeDao extends AbstractEntityDAO<Recipe> {
     @Override
     protected PreparedStatement getPreparedStatementForUpdate(Connection connection, Recipe recipe) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement(
-                "UPDATE RECIPES SET DESCRIPTION = ?, VALIDITY = ?, PRIORITYID = ? WHERE ID = ?");
+                "UPDATE RECIPES SET DESCRIPTION = ?, PATIENTID = ?, DOCTORID = ?, CREATIONDATE = ?, VALIDITY = ?, PRIORITYID = ? WHERE ID = ?");
         preparedStatement.setString(1, recipe.getDescription());
-        preparedStatement.setShort(2, recipe.getValidity());
-        preparedStatement.setLong(3, recipe.getPriority().getId());
-        preparedStatement.setLong(4, recipe.getId());
+        preparedStatement.setLong(2, recipe.getPatient().getId());
+        preparedStatement.setLong(3, recipe.getDoctor().getId());
+        preparedStatement.setDate(4, recipe.getCreationDate());
+        preparedStatement.setInt(5, recipe.getValidity());
+        preparedStatement.setLong(6, recipe.getPriority().getId());
+        preparedStatement.setLong(7, recipe.getId());
         return preparedStatement;
     }
 
     @Override
     protected PreparedStatement getPreparedStatementForAdd(Connection connection, Recipe recipe) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement(
-                "INSERT INTO RECIPES (DOCTORID, PATIENTID, DESCRIPTION, CREATIONDATE, VALIDITY, PRIORITYID) VALUES (?, ?, ?, ?, ?, ?)");
-        preparedStatement.setLong(1, recipe.getDoctor().getId());
+                "INSERT INTO RECIPES (DESCRIPTION, PATIENTID, DOCTORID, CREATIONDATE, VALIDITY, PRIORITYID) VALUES (?, ?, ?, ?, ?, ?)");
+        preparedStatement.setString(1, recipe.getDescription());
         preparedStatement.setLong(2, recipe.getPatient().getId());
-        preparedStatement.setString(3, recipe.getDescription());
+        preparedStatement.setLong(3, recipe.getDoctor().getId());
         preparedStatement.setDate(4, recipe.getCreationDate());
-        preparedStatement.setShort(5, recipe.getValidity());
+        preparedStatement.setInt(5, recipe.getValidity());
         preparedStatement.setLong(6, recipe.getPriority().getId());
         return preparedStatement;
     }

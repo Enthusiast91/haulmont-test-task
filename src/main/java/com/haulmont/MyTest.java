@@ -17,43 +17,43 @@ public class MyTest {
     private static final String jdbcDriver = "org.hsqldb.jdbcDriver";
 
     public static void main(String[] args) {
-        initJDBCPath();
-
-        try {
-            Class.forName(jdbcDriver);
-        } catch (ClassNotFoundException e) {
-            System.err.println("Не удалось загурзить дрйвер БД");
-            e.printStackTrace();
-        }
-
-        try (Connection connection = DriverManager.getConnection(url, userName, pass);
-             Statement statement = connection.createStatement()) {
-
-            initDatabase(statement);
-
-//            ResultSet rs = null;
-//            try {
-//                rs = statement.executeQuery("SELECT * FROM RECIPES");
-//                while (rs.next()) {
-//                    System.out.println(rs.getLong(0));
-//                }
-//            } catch (SQLException e) {
-//                System.err.println("SQLException " + e.getMessage());
-//                System.err.println("SQLException SQL state" + e.getSQLState());
-//                System.err.println("SQLException error code" + e.getErrorCode());
-//            } finally {
-//                if (rs != null) {
-//                    rs.close();
-//                } else {
-//                    System.out.println("Error reading database");
-//                }
-//            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        System.out.println("finish");
+//        initJDBCPath();
+//
+//        try {
+//            Class.forName(jdbcDriver);
+//        } catch (ClassNotFoundException e) {
+//            System.err.println("Не удалось загурзить дрйвер БД");
+//            e.printStackTrace();
+//        }
+//
+//        try (Connection connection = DriverManager.getConnection(url, userName, pass);
+//             Statement statement = connection.createStatement()) {
+//
+//            initDatabase(statement);
+//
+////            ResultSet rs = null;
+////            try {
+////                rs = statement.executeQuery("SELECT * FROM RECIPES");
+////                while (rs.next()) {
+////                    System.out.println(rs.getLong(0));
+////                }
+////            } catch (SQLException e) {
+////                System.err.println("SQLException " + e.getMessage());
+////                System.err.println("SQLException SQL state" + e.getSQLState());
+////                System.err.println("SQLException error code" + e.getErrorCode());
+////            } finally {
+////                if (rs != null) {
+////                    rs.close();
+////                } else {
+////                    System.out.println("Error reading database");
+////                }
+////            }
+//
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        System.out.println("finish");
     }
 
     public static void initDatabase(Statement statement) throws SQLException {
