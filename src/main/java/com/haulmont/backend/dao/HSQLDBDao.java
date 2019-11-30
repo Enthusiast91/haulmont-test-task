@@ -5,7 +5,6 @@ import java.io.File;
 public class HSQLDBDao implements JDBCDao {
     private final String name = "root";
     private final String pass = "1234";
-    //private String pathToSQLDBInitFile;
     private String url;
 
     private static HSQLDBDao jdbc;
@@ -21,10 +20,6 @@ public class HSQLDBDao implements JDBCDao {
     public String getPass() {
         return pass;
     }
-
-//    public String getPathToSQLDBInitFile() {
-//        return pathToSQLDBInitFile;
-//    }
 
     public static synchronized JDBCDao getInstance() {
         if (jdbc == null) {
@@ -46,7 +41,6 @@ public class HSQLDBDao implements JDBCDao {
     private void initDBPath() {
         String fSep = System.getProperty("file.separator");
         String pathToProject = new File("").getAbsolutePath();
-//        pathToSQLDBInitFile = pathToProject + fSep + "src" + fSep + "main" + fSep + "resources" + fSep + "db" + fSep + "initDBinline.sql";
         pathToProject = pathToProject.replaceAll("[\\\\/]", "/");
         url = "jdbc:hsqldb:file:" + pathToProject + "/src/main/resources/db/maindb";
     }

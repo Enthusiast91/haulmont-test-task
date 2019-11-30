@@ -1,11 +1,10 @@
 package com.haulmont.backend;
 
-import com.haulmont.backend.dao.Entity;
+import com.haulmont.ui.components.Viewable;
 
-import java.util.Map;
 import java.util.Objects;
 
-public abstract class AbstractPerson implements Entity {
+public abstract class AbstractPerson<E> implements Viewable<E> {
     protected final long id;
     protected String name;
     protected String lastName;
@@ -35,7 +34,9 @@ public abstract class AbstractPerson implements Entity {
         this.patronymic = patronymic;
     }
 
-    public String getFullName() { return getName() + " " + getLastName(); }
+    public String getFullName() {
+        return getName() + " " + getLastName();
+    }
 
     protected AbstractPerson(long id, String name, String lastName, String patronymic) {
         this.id = id;
@@ -44,19 +45,14 @@ public abstract class AbstractPerson implements Entity {
         this.patronymic = patronymic;
     }
 
-    protected void updateValue(AbstractPerson person) {
-        setName(person.getName());
-        setLastName(person.getLastName());
-        setPatronymic(person.getPatronymic());
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof AbstractPerson)) return false;
-        AbstractPerson that = (AbstractPerson) o;
-        return name.equals(that.name) &&
-                lastName.equals(that.lastName) &&
+        AbstractPerson<?> that = (AbstractPerson<?>) o;
+        return id == that.id &&
+                Objects.equals(name, that.name) &&
+                Objects.equals(lastName, that.lastName) &&
                 Objects.equals(patronymic, that.patronymic);
     }
 

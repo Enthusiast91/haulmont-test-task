@@ -2,7 +2,7 @@ package com.haulmont.ui;
 
 import com.vaadin.annotations.Theme;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.*;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.themes.ValoTheme;
 
 @Theme(ValoTheme.THEME_NAME)

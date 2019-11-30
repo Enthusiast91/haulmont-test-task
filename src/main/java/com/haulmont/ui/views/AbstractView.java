@@ -1,47 +1,54 @@
 package com.haulmont.ui.views;
 
 import com.haulmont.backend.dao.AbstractEntityDAO;
-import com.haulmont.backend.dao.Entity;
 import com.haulmont.ui.components.Viewable;
+import com.vaadin.data.Binder;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.navigator.View;
+import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
 
-import com.vaadin.data.Binder;
-
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public abstract class AbstractView<E extends Viewable<E>> extends VerticalLayout implements View {
     protected final AbstractEntityDAO<E> entityDao;
-    protected List<E> entityMap;
+    protected List<E> entityList;
     protected Binder<E> binder;
     protected Grid<E> grid;
 
+    protected abstract void localEnter();
+
     protected abstract Grid<E> createGrid();
 
-    protected abstract void addOtherComponents();
+    protected abstract void addOtherComponents(VerticalLayout layout);
 
-    protected abstract FormLayout createFormLayout(Action action);
+    protected abstract FormLayout createInputFormLayout(Action action);
 
     protected AbstractView(String labelText, AbstractEntityDAO<E> entityDao) {
         this.entityDao = entityDao;
-        entityMap = entityDao.getAll();
+        entityList = entityDao.getAll();
         binder = new Binder<>();
         grid = createGrid();
         Label label = new Label(labelText);
-
-        grid.setItems(entityMap);
         grid.setSizeFull();
         grid.addItemClickListener(event -> binder.setBean(event.getItem()));
 
         setSizeFull();
         addComponents(label, getToolsLayout());
-        addOtherComponents();
+        addOtherComponents(this);
         addComponent(grid);
         setExpandRatio(grid, 1);
+    }
+
+    @Override
+    public void enter(ViewChangeListener.ViewChangeEvent event) {
+        entityList = entityDao.getAll();
+        grid.setItems(entityList);
+        grid.deselectAll();
+        binder.removeBean();
+        grid.getDataProvider().refreshAll();
+        localEnter();
     }
 
     private Layout getToolsLayout() {
@@ -58,7 +65,7 @@ public abstract class AbstractView<E extends Viewable<E>> extends VerticalLayout
 
         buttonEdit.addClickListener(event -> {
             if (binder.getBean() == null) {
-                Notification.show("Пожалуйста выберите строку");
+                Notification.show("Выберите строку");
                 return;
             }
             getUI().addWindow(createWindowForm(Action.UPDATE));
@@ -67,19 +74,23 @@ public abstract class AbstractView<E extends Viewable<E>> extends VerticalLayout
         buttonRemove.addClickListener(event -> {
             E entity = binder.getBean();
             if (entity == null) {
-                Notification.show("Пожалуйста выберите строку");
+                Notification.show("Выберите строку");
                 return;
             }
             if (!entityDao.delete(entity.getId())) {
-                Notification.show("Не может быть удален! Данный пациент связан с записью в базе данных.").setDelayMsec(2500);
+                Notification.show("Не может быть удален! Данный субъект связан с записью в базе данных.").setDelayMsec(2500);
                 return;
             }
-            entityMap.remove(entity);
+            entityList.remove(entity);
             binder.removeBean();
             grid.getDataProvider().refreshAll();
         });
 
         layout.addComponents(buttonAdd, buttonEdit, buttonRemove);
+        layout.setComponentAlignment(buttonAdd, Alignment.MIDDLE_CENTER);
+        layout.setComponentAlignment(buttonEdit, Alignment.MIDDLE_CENTER);
+        layout.setComponentAlignment(buttonRemove, Alignment.MIDDLE_CENTER);
+
         return layout;
     }
 
@@ -97,7 +108,7 @@ public abstract class AbstractView<E extends Viewable<E>> extends VerticalLayout
         HorizontalLayout buttonLayout = new HorizontalLayout();
         Button acceptButton = new Button("ОК");
         Button cancelButton = new Button("ОТМЕНИТЬ");
-        FormLayout formLayout = createFormLayout(action);
+        FormLayout formLayout = createInputFormLayout(action);
 
         window.setResizable(false);
         window.setModal(true);
@@ -108,7 +119,6 @@ public abstract class AbstractView<E extends Viewable<E>> extends VerticalLayout
         E selectedEntity = binder.getBean().getCopy();
 
         acceptButton.addClickListener(event -> {
-//            Notification.show(binder.getBean() + "").setDelayMsec(3000);/////////////////////////////////////////////////////
             if (binder.isValid()) {
                 switch (action) {
                     case ADD:
@@ -116,7 +126,7 @@ public abstract class AbstractView<E extends Viewable<E>> extends VerticalLayout
                         binder.removeBean();
                         break;
                     case UPDATE:
-                        if(!doUpdate(selectedEntity)) {
+                        if (!doUpdate(selectedEntity)) {
                             Notification.show("Данные идентичны");
                             return;
                         }
@@ -124,7 +134,7 @@ public abstract class AbstractView<E extends Viewable<E>> extends VerticalLayout
                 }
                 window.close();
             } else {
-                Notification.show("Введены некорректные данные").setDelayMsec(600);
+                Notification.show("Введены некорректные данные").setDelayMsec(100);
             }
         });
 
@@ -142,27 +152,34 @@ public abstract class AbstractView<E extends Viewable<E>> extends VerticalLayout
         return window;
     }
 
-    private void doAdd(E entity) {
-        entityDao.add(entity);
-        entityMap.clear();
-        entityMap.addAll(entityDao.getAll());
+    private boolean doAdd(E entity) {
+        if (!entityDao.add(entity)) {
+            return false;
+        }
+        entityList.clear();
+        entityList.addAll(entityDao.getAll());
         grid.getDataProvider().refreshAll();
+        return true;
     }
 
-    protected boolean doUpdate(E oldEntity) {
+    private boolean doUpdate(E oldEntity) {
         E entity = binder.getBean();
         if (entity.equals(oldEntity)) {
             return false;
         }
-        entityDao.update(binder.getBean());
+        if (!entityDao.update(entity)) {
+            return false;
+        }
 
-        entityMap = entityDao.getAll();     // Костыль
-        grid.setItems(entityMap);           // Костыль
-        binder.removeBean();                // Костыль
+        entityList = entityDao.getAll();     //
+        grid.setItems(entityList);           // Костыль
 
+        grid.deselect(entity);
+        binder.removeBean();
         grid.getDataProvider().refreshAll();
         return true;
     }
+
     protected enum Action {
         ADD,
         UPDATE

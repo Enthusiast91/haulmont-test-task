@@ -6,6 +6,10 @@ public abstract class Message {
         return "Строка от 2 до 30 знаков. Без цифр";
     }
 
+    public static String patronymicValidationError() {
+        return "Строка от 0 до 30 знаков. Без цифр";
+    }
+
     public static String phoneValidationError() {
         return "Введите корректный телефон";
     }

@@ -7,20 +7,23 @@ import com.haulmont.backend.RecipePriority;
 import com.haulmont.backend.dao.*;
 import com.haulmont.ui.components.Message;
 import com.haulmont.ui.components.Validation;
-import com.haulmont.ui.components.Viewable;
+import com.vaadin.data.ValueProvider;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.IntegerRangeValidator;
-import com.vaadin.data.validator.ShortRangeValidator;
+import com.vaadin.server.Setter;
 import com.vaadin.ui.*;
 
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 public class RecipesView extends AbstractView<Recipe> {
     public RecipesView() {
         super("РЕЦЕПТЫ", new RecipeDao());
+    }
+
+    @Override
+    protected void localEnter() {
+
     }
 
     @Override
@@ -41,31 +44,18 @@ public class RecipesView extends AbstractView<Recipe> {
     }
 
     @Override
-    protected void addOtherComponents() {
-
-    }
-
-    private ComboBox createComboBox (List entities, String caption){
-        ComboBox entityComboBox = new ComboBox<>(caption);
-        entityComboBox.setWidth(100.0f, Unit.PERCENTAGE);
-        entityComboBox.setItems(entities);
-        entityComboBox.setEmptySelectionAllowed(false);
-        return entityComboBox;
-    }
-
-    @Override
-    protected FormLayout createFormLayout(Action action) {
+    protected FormLayout createInputFormLayout(Action action) {
         List<Patient> patients = new PatientDao().getAll();
-        List<RecipePriority> recipePriorities = new RecipePriorityDao().getAll();
         List<Doctor> doctors = new DoctorDao().getAll();
+        List<RecipePriority> recipePriorities = new RecipePriorityDao().getAll();
 
         FormLayout formLayout = new FormLayout();
         formLayout.setWidth("500px");
 
-        ComboBox<Patient> patientComboBox = createComboBox(patients, "ПАЦИЕНТ");
+        ComboBox<Patient> patientComboBox = createComboBoxForInputForm(patients, "ПАЦИЕНТ");
         patientComboBox.setItemCaptionGenerator(Patient::getFullName);
 
-        ComboBox<Doctor> doctorComboBox = createComboBox(doctors, "ВРАЧ");
+        ComboBox<Doctor> doctorComboBox = createComboBoxForInputForm(doctors, "ВРАЧ");
         doctorComboBox.setItemCaptionGenerator(Doctor::getFullName);
 
         DateField creationDateField = new DateField("ДАТА СОЗДАНИЯ");
@@ -78,7 +68,7 @@ public class RecipesView extends AbstractView<Recipe> {
         Label unlimitedLabel = new Label("0 = неограниченный срок");
         unlimitedLabel.setEnabled(false);
 
-        ComboBox<RecipePriority> priorityComboBox = createComboBox(recipePriorities, "ПРИОРИТЕТ");
+        ComboBox<RecipePriority> priorityComboBox = createComboBoxForInputForm(recipePriorities, "ПРИОРИТЕТ");
         priorityComboBox.setItemCaptionGenerator(RecipePriority::getTitle);
         priorityComboBox.setSelectedItem(recipePriorities.get(0));
         priorityComboBox.setTextInputAllowed(false);
@@ -86,6 +76,68 @@ public class RecipesView extends AbstractView<Recipe> {
         TextArea descriptionField = new TextArea("ОПИСАНИЕ");
         descriptionField.setWidth(100.0f, Unit.PERCENTAGE);
 
+        bindingFields(action, patientComboBox, doctorComboBox, creationDateField, validityField, priorityComboBox, descriptionField);
+
+        formLayout.addComponents(patientComboBox,
+                doctorComboBox,
+                creationDateField,
+                validityField,
+                unlimitedLabel,
+                priorityComboBox,
+                descriptionField);
+        return formLayout;
+    }
+
+    @Override
+    protected void addOtherComponents(VerticalLayout outerLayout) {
+        List<Patient> patients = new PatientDao().getAll();
+        List<RecipePriority> recipePriorities = new RecipePriorityDao().getAll();
+
+        HorizontalLayout layout = new HorizontalLayout();
+        Panel panel = new Panel("ФИЛЬТР", layout);
+        layout.setMargin(true);
+        panel.setHeightUndefined();
+
+        ComboBox<Patient> patientComboBox = new ComboBox<>("ПАЦИЕНТ");
+        patientComboBox.setItems(patients);
+        patientComboBox.setItemCaptionGenerator(Patient::getFullName);
+        patientComboBox.setWidth("220px");
+
+        ComboBox<RecipePriority> priorityComboBox = new ComboBox<>("ПРИОРИТЕТ");
+        priorityComboBox.setItems(recipePriorities);
+        priorityComboBox.setItemCaptionGenerator(RecipePriority::getTitle);
+        priorityComboBox.setTextInputAllowed(false);
+
+        TextField descriptionField = new TextField("ОПИСАНИЕ");
+        descriptionField.setWidth("220px");
+
+        Button buttonAccept = new Button("ПРИМЕНИТЬ");
+        buttonAccept.addClickListener(event -> {
+            Patient patient = patientComboBox.getValue();
+            RecipePriority priority = priorityComboBox.getValue();
+            String description = descriptionField.getValue();
+
+            long patientID = patient == null ? -1 : patient.getId();
+            long priorityID = priority == null ? -1 : priority.getId();
+
+            entityList.clear();
+            entityList.addAll(((RecipeDao) entityDao).getFiltered(patientID, priorityID, description));
+            grid.getDataProvider().refreshAll();
+        });
+
+        layout.addComponents(patientComboBox, priorityComboBox, descriptionField, buttonAccept);
+        layout.setComponentAlignment(buttonAccept, Alignment.BOTTOM_CENTER);
+        outerLayout.addComponent(panel);
+        //outerLayout.setExpandRatio(panel, 1);
+    }
+
+    private void bindingFields(Action action,
+                               ComboBox<Patient> patientComboBox,
+                               ComboBox<Doctor> doctorComboBox,
+                               DateField creationDateField,
+                               TextField validityField,
+                               ComboBox<RecipePriority> priorityComboBox,
+                               TextArea descriptionField) {
         Recipe recipe;
 
         if (action == Action.ADD) {
@@ -102,7 +154,7 @@ public class RecipesView extends AbstractView<Recipe> {
         binder.forField(creationDateField)
                 .withValidator(Validation::notNull, Message.notNullError("\"Дата создания\""))
                 .bind(r -> r.getCreationDate().toLocalDate(), Recipe::setCreationDate);
-        binder.forField(validityField)///////////////////////////////////////////////////////////////////////////////////////// при удалениии nullpointer
+        binder.forField(validityField)
                 .withValidator(Validation::notNull, Message.notNullError("\"Срок\""))
                 .withConverter(new StringToIntegerConverter("Невозможно преобразовать в целое число"))
                 .withValidator(new IntegerRangeValidator("Максимально 10 лет, либо неограниченный", 0, 3650))
@@ -111,14 +163,13 @@ public class RecipesView extends AbstractView<Recipe> {
         binder.forField(descriptionField)
                 .withValidator(Validation::descriptionIsValid, Message.descriptionValidationError())
                 .bind(Recipe::getDescription, Recipe::setDescription);
+    }
 
-        formLayout.addComponents(patientComboBox,
-                doctorComboBox,
-                creationDateField,
-                validityField,
-                unlimitedLabel,
-                priorityComboBox,
-                descriptionField);
-        return formLayout;
+    private ComboBox createComboBoxForInputForm(List entities, String caption) {
+        ComboBox<Entity> entityComboBox = new ComboBox<>(caption);
+        entityComboBox.setItems(entities);
+        entityComboBox.setWidth(100.0f, Unit.PERCENTAGE);
+        entityComboBox.setEmptySelectionAllowed(false);
+        return entityComboBox;
     }
 }

@@ -2,9 +2,7 @@ package com.haulmont.backend.dao;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public abstract class AbstractEntityDAO<E extends Entity> {
     private static final JDBCDao JDBC = HSQLDBDao.getInstance();
@@ -49,20 +47,24 @@ public abstract class AbstractEntityDAO<E extends Entity> {
         return entity;
     }
 
-    public void update(E entity) {
+    public boolean update(E entity) {
         try (PreparedStatement preparedStatement = getPreparedStatementForUpdate(getConnection(), entity)) {
             preparedStatement.execute();
         } catch (SQLException e) {
             printSQLException(e);
+            return false;
         }
+        return true;
     }
 
-    public void add(E entity) {
+    public boolean add(E entity) {
         try (PreparedStatement preparedStatement = getPreparedStatementForAdd(getConnection(), entity)) {
             preparedStatement.execute();
         } catch (SQLException e) {
             printSQLException(e);
+            return false;
         }
+        return true;
     }
 
     public boolean delete(Long id) {

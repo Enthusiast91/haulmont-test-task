@@ -1,11 +1,8 @@
 package com.haulmont.backend;
 
-import com.haulmont.backend.dao.Entity;
-import com.haulmont.ui.components.Viewable;
-
 import java.util.Objects;
 
-public class Patient extends AbstractPerson implements Viewable<Patient> {
+public class Patient extends AbstractPerson<Patient> {
     private String phone;
 
     public String getPhone() {
@@ -25,19 +22,13 @@ public class Patient extends AbstractPerson implements Viewable<Patient> {
         this.phone = phone;
     }
 
-//    @Override
-//    public void updateValue(Patient patient) {
-//        super.updateValue(patient);
-//        setPhone(patient.getPhone());
-//    }
-
     @Override
     public long getId() {
         return id;
     }
 
     @Override
-    public Patient getCopy(){
+    public Patient getCopy() {
         return new Patient(id, name, lastName, patronymic, phone);
     }
 
@@ -47,7 +38,7 @@ public class Patient extends AbstractPerson implements Viewable<Patient> {
         if (!(o instanceof Patient)) return false;
         if (!super.equals(o)) return false;
         Patient patient = (Patient) o;
-        return phone.equals(patient.phone);
+        return Objects.equals(phone, patient.phone);
     }
 
     @Override

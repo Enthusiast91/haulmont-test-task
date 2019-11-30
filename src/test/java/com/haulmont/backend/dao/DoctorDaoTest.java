@@ -29,12 +29,12 @@ public class DoctorDaoTest extends AbstractEntityDAOTest<Doctor> {
         return new Doctor(0, name, lastName, patronymic, specialization);
     }
 
-    @Test
-    public void getAllWithCountRecipesTest() {
-        List<DoctorDao.DoctorAndQuantityRecipes> list = ((DoctorDao) entityDAO).getAllWithCountRecipes();
-        for (DoctorDao.DoctorAndQuantityRecipes entry : list) {
-            System.out.println(entry);
-        }
-    }
+//    @Test
+//    public void getAllWithCountRecipesTest() {
+//        List<DoctorDao.DoctorAndQuantityRecipes> list = ((DoctorDao) entityDAO).getQuantityRecipes();
+//        for (DoctorDao.DoctorAndQuantityRecipes entry : list) {
+//            System.out.println(entry);
+//        }
+//    }
 
 }

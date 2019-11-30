@@ -89,15 +89,6 @@ public class Recipe implements Entity, Viewable<Recipe> {
         return new Recipe(id, description, creationDate, validity, doctor, patient, priority);
     }
 
-//    @Override
-//    public void updateValue(Recipe recipe) {
-//        setDescription(recipe.getDescription());
-//        setDoctor(recipe.getDoctor());
-//        setPriority(recipe.getPriority());
-//        setValidity(recipe.getValidity());
-//    }
-
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

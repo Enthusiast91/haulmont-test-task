@@ -3,8 +3,8 @@ package com.haulmont.backend.dao;
 import com.haulmont.backend.Doctor;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DoctorDao extends AbstractEntityDAO<Doctor> {
 
@@ -59,44 +59,25 @@ public class DoctorDao extends AbstractEntityDAO<Doctor> {
         return preparedStatement;
     }
 
-    public List<DoctorAndQuantityRecipes> getAllWithCountRecipes() {
-        List<DoctorAndQuantityRecipes> list = null;
+    public Map<Long, Integer> getQuantityRecipes() {
+        Map<Long, Integer> map = null;
         try (Connection connection = getConnection();
              Statement statement = connection.createStatement();
              ResultSet rs = statement.executeQuery(
-                     "SELECT ID, NAME, LASTNAME, PATRONYMIC, SPECIALIZATION, COUNT(*) QTY " +
-                         "FROM DOCTORS D " +
-                         "JOIN RECIPES R " +
-                         "ON D.ID = R.DOCTORID " +
-                         "GROUP BY D.ID")) {
-            list = new ArrayList<>();
+                     "SELECT D.ID, COUNT(*) QTY " +
+                             "FROM DOCTORS D " +
+                             "JOIN RECIPES R " +
+                             "ON D.ID = R.DOCTORID " +
+                             "GROUP BY D.ID")) {
+            map = new HashMap<>();
             while (rs.next()) {
-                list.add(getEntityAndQuantityRecipes(rs));
+                Long id = rs.getLong("ID");
+                Integer quantity = rs.getInt("QTY");
+                map.put(id, quantity);
             }
         } catch (SQLException e) {
             printSQLException(e);
         }
-        return list;
-    }
-
-    private DoctorAndQuantityRecipes getEntityAndQuantityRecipes(ResultSet rs) throws SQLException {
-        Doctor doctor = getEntity(rs);
-        int quantityRecipes = rs.getInt("QTY");
-        return new DoctorAndQuantityRecipes(doctor, quantityRecipes);
-    }
-
-    public static class DoctorAndQuantityRecipes {
-        public Doctor doctor;
-        public int quantityRecipes;
-
-        DoctorAndQuantityRecipes(Doctor doctor, int quantityRecipes) {
-            this.doctor = new Doctor(doctor.getId(), doctor.getName(), doctor.getLastName(), doctor.getPatronymic(), doctor.getSpecialization());
-            this.quantityRecipes = quantityRecipes;
-        }
-
-        @Override
-        public String toString() {
-            return doctor + " QTY= " + quantityRecipes;
-        }
+        return map;
     }
 }

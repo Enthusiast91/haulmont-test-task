@@ -3,10 +3,6 @@ package com.haulmont.backend.dao;
 import com.haulmont.backend.Patient;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 public class PatientDao extends AbstractEntityDAO<Patient> {
 

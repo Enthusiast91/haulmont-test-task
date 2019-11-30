@@ -23,6 +23,7 @@ public class MainLayout extends HorizontalLayout {
         navigator.addView("PatientsView", new PatientsView());
         navigator.addView("DoctorsView", new DoctorsView());
         navigator.addView("RecipesView", new RecipesView());
+
         navigator.navigateTo("RecipesView");
     }
 
@@ -47,7 +48,6 @@ public class MainLayout extends HorizontalLayout {
         layout.setComponentAlignment(buttonPatients, Alignment.MIDDLE_CENTER);
         layout.setComponentAlignment(buttonDoctors, Alignment.MIDDLE_CENTER);
         layout.setComponentAlignment(buttonRecipes, Alignment.MIDDLE_CENTER);
-
 
         return layout;
     }

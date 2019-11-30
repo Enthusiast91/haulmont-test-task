@@ -1,75 +1,65 @@
 package com.haulmont.ui.views;
 
 import com.haulmont.backend.Doctor;
-import com.haulmont.backend.Patient;
 import com.haulmont.backend.dao.DoctorDao;
-import com.haulmont.backend.dao.Entity;
-import com.haulmont.ui.components.Message;
-import com.haulmont.ui.components.Validation;
-import com.vaadin.data.Binder;
-import com.vaadin.data.ValueProvider;
-import com.vaadin.server.Setter;
-import com.vaadin.ui.*;
+import com.vaadin.icons.VaadinIcons;
+import com.vaadin.ui.Button;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.TextField;
+import com.vaadin.ui.VerticalLayout;
 
-public class DoctorsView extends AbstractView<Doctor> {
+import java.util.Map;
+
+public class DoctorsView extends AbstractPersonView<Doctor> {
 
     public DoctorsView() {
         super("ВРАЧИ", new DoctorDao());
     }
 
     @Override
-    protected Grid<Doctor> createGrid() {
-        Grid<Doctor> grid = new Grid<>();
-        grid.addColumn(Doctor::getName).setCaption("ИМЯ");
-        grid.addColumn(Doctor::getLastName).setCaption("ФАМИЛИЯ");
-        grid.addColumn(Doctor::getPatronymic).setCaption("ОТЧЕСТВО");
-        grid.addColumn(Doctor::getSpecialization).setCaption("СПЕЦИАЛИЗАЦИЯ");
-        return grid;
+    protected void localEnter() {
     }
 
     @Override
-    protected FormLayout createFormLayout(Action action) {
-        FormLayout formLayout = new FormLayout();
-        TextField nameField = new TextField("ИМЯ");
-        TextField lastNameField = new TextField("ФАМИЛИЯ");
-        TextField patronymicField = new TextField("ОТЧЕСТВО");
-        TextField specializationField = new TextField("СПЕЦИАЛИЗАЦИЯ");
-        Doctor doctor;
-
-        if (action == Action.ADD) {
-            doctor = Doctor.getEmpty();
-            binder.setBean(doctor);
-        }
-
-        binderForFieldName(nameField, Doctor::getName, Doctor::setName);
-        binderForFieldName(lastNameField, Doctor::getLastName, Doctor::setLastName);
-        binderForFieldName(patronymicField, Doctor::getPatronymic, Doctor::setPatronymic);
-        binder.forField(specializationField)
-                .withValidator(Validation::phoneIsValid, Message.phoneValidationError())
-                .bind(Doctor::getSpecialization, Doctor::setSpecialization);
-
-        formLayout.addComponents(nameField, lastNameField, patronymicField, specializationField);
-        return formLayout;
-    }
-
-    private void binderForFieldName(TextField field, ValueProvider<Doctor, String> getter, Setter<Doctor, String> setter) {
-        binder.forField(field)
-                .withValidator(Validation::namedIsValid, Message.nameValidationError())
-                .bind(getter, setter);
-    }
-
-    @Override
-    protected void addOtherComponents() {
+    protected void addOtherComponents(VerticalLayout layout) {
         Button buttonStatictics = new Button("Показать статистику");
+        buttonStatictics.setWidth("200px");
+        buttonStatictics.setIcon(VaadinIcons.EYE);
+
         buttonStatictics.addClickListener(event -> {
-
+            if (buttonStatictics.getData() == null) {
+                Map<Long, Integer> mapQuantityRecipes = ((DoctorDao) entityDao).getQuantityRecipes();
+                grid.addColumn(doctor -> mapQuantityRecipes.get(doctor.getId())).setId("STATISTICS").setCaption("КОЛИЧЕСТВО РЕЦЕПТОВ");
+                buttonStatictics.setData(true);
+                buttonStatictics.setCaption("Убрать статистику");
+                buttonStatictics.setIcon(VaadinIcons.EYE_SLASH);
+                return;
+            }
+            grid.removeColumn("STATISTICS");
+            buttonStatictics.setData(null);
+            buttonStatictics.setCaption("Показать статистику");
+            buttonStatictics.setIcon(VaadinIcons.EYE);
         });
+        layout.addComponent(buttonStatictics);
     }
 
-    private Window createStatisticsWindow() {
-        Window window = new Window();
-
-        return window;
+    @Override
+    protected void addGridColumn(Grid<Doctor> grid) {
+        grid.addColumn(Doctor::getSpecialization).setCaption("СПЕЦИАЛИЗАЦИЯ");
     }
 
+    @Override
+    protected Doctor getEmptyPerson() {
+        return Doctor.getEmpty();
+    }
+
+    @Override
+    protected TextField getPersonField() {
+        return new TextField("СПЕЦИАЛИЗАЦИЯ");
+    }
+
+    @Override
+    protected void bindPersonField(TextField specializationField) {
+        bindFieldOfNaming(specializationField, Doctor::getSpecialization, Doctor::setSpecialization);
+    }
 }

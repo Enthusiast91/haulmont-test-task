@@ -6,5 +6,4 @@ public interface JDBCDao {
     String getUserName();
 
     String getPass();
-
 }

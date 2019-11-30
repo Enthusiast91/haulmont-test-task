@@ -39,12 +39,12 @@ public class RecipePriorityDao extends AbstractEntityDAO<RecipePriority> {
     }
 
     @Override
-    public void update(RecipePriority entity) {
+    public boolean update(RecipePriority entity) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void add(RecipePriority entity) {
+    public boolean add(RecipePriority entity) {
         throw new UnsupportedOperationException();
     }
 
