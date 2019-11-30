@@ -5,7 +5,7 @@ import com.haulmont.backend.Patient;
 public class PatientDaoTest extends AbstractEntityDAOTest<Patient> {
 
     public PatientDaoTest() {
-        super(new PatientDao());
+        super(PatientDao.getInstance());
     }
 
     @Override

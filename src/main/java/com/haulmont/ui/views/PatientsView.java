@@ -11,7 +11,7 @@ import com.vaadin.ui.VerticalLayout;
 public class PatientsView extends AbstractPersonView<Patient> {
 
     public PatientsView() {
-        super("ПАЦИЕНТЫ", new PatientDao());
+        super("ПАЦИЕНТЫ", PatientDao.getInstance());
     }
 
     @Override

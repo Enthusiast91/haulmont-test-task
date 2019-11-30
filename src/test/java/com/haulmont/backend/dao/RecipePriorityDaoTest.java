@@ -5,7 +5,7 @@ import org.junit.Test;
 
 public class RecipePriorityDaoTest extends AbstractEntityDAOTest<RecipePriority> {
     public RecipePriorityDaoTest() {
-        super(new RecipePriorityDao());
+        super(RecipePriorityDao.getInstance());
     }
 
     @Override

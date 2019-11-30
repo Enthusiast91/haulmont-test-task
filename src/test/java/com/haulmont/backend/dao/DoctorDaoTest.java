@@ -7,7 +7,7 @@ import java.util.List;
 
 public class DoctorDaoTest extends AbstractEntityDAOTest<Doctor> {
     public DoctorDaoTest() {
-        super(new DoctorDao());
+        super(DoctorDao.getInstance());
     }
 
     @Override

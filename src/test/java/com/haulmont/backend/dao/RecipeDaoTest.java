@@ -12,7 +12,7 @@ import java.util.List;
 
 public class RecipeDaoTest extends AbstractEntityDAOTest<Recipe> {
     public RecipeDaoTest() {
-        super(new RecipeDao());
+        super(RecipeDao.getInstance());
     }
 
     @Override

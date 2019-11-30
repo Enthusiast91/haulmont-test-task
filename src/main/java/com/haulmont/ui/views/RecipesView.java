@@ -17,13 +17,24 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class RecipesView extends AbstractView<Recipe> {
+    private List<Patient> patients;
+    private List<Doctor> doctors;
+    private List<RecipePriority> recipePriorities;
+
     public RecipesView() {
-        super("РЕЦЕПТЫ", new RecipeDao());
+        super("РЕЦЕПТЫ", RecipeDao.getInstance());
     }
 
     @Override
     protected void localEnter() {
+        patients.clear();
+        patients.addAll(PatientDao.getInstance().getAll());
 
+        doctors.clear();
+        doctors.addAll(DoctorDao.getInstance().getAll());
+
+        recipePriorities.clear();
+        recipePriorities.addAll(RecipePriorityDao.getInstance().getAll());
     }
 
     @Override
@@ -45,10 +56,6 @@ public class RecipesView extends AbstractView<Recipe> {
 
     @Override
     protected FormLayout createInputFormLayout(Action action) {
-        List<Patient> patients = new PatientDao().getAll();
-        List<Doctor> doctors = new DoctorDao().getAll();
-        List<RecipePriority> recipePriorities = new RecipePriorityDao().getAll();
-
         FormLayout formLayout = new FormLayout();
         formLayout.setWidth("500px");
 
@@ -70,7 +77,6 @@ public class RecipesView extends AbstractView<Recipe> {
 
         ComboBox<RecipePriority> priorityComboBox = createComboBoxForInputForm(recipePriorities, "ПРИОРИТЕТ");
         priorityComboBox.setItemCaptionGenerator(RecipePriority::getTitle);
-        priorityComboBox.setSelectedItem(recipePriorities.get(0));
         priorityComboBox.setTextInputAllowed(false);
 
         TextArea descriptionField = new TextArea("ОПИСАНИЕ");
@@ -90,8 +96,9 @@ public class RecipesView extends AbstractView<Recipe> {
 
     @Override
     protected void addOtherComponents(VerticalLayout outerLayout) {
-        List<Patient> patients = new PatientDao().getAll();
-        List<RecipePriority> recipePriorities = new RecipePriorityDao().getAll();
+        patients = PatientDao.getInstance().getAll();
+        doctors = DoctorDao.getInstance().getAll();
+        recipePriorities = RecipePriorityDao.getInstance().getAll();
 
         HorizontalLayout layout = new HorizontalLayout();
         Panel panel = new Panel("ФИЛЬТР", layout);
@@ -128,7 +135,6 @@ public class RecipesView extends AbstractView<Recipe> {
         layout.addComponents(patientComboBox, priorityComboBox, descriptionField, buttonAccept);
         layout.setComponentAlignment(buttonAccept, Alignment.BOTTOM_CENTER);
         outerLayout.addComponent(panel);
-        //outerLayout.setExpandRatio(panel, 1);
     }
 
     private void bindingFields(Action action,

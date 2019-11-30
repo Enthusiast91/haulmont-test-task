@@ -3,8 +3,6 @@ package com.haulmont.backend.dao;
 import java.io.File;
 
 public class HSQLDBDao implements JDBCDao {
-    private final String name = "root";
-    private final String pass = "1234";
     private String url;
 
     private static HSQLDBDao jdbc;
@@ -14,11 +12,11 @@ public class HSQLDBDao implements JDBCDao {
     }
 
     public String getUserName() {
-        return name;
+        return "root";
     }
 
     public String getPass() {
-        return pass;
+        return "1234";
     }
 
     public static synchronized JDBCDao getInstance() {

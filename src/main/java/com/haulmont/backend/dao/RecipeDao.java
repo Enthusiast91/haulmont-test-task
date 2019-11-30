@@ -10,12 +10,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RecipeDao extends AbstractEntityDAO<Recipe> {
+    private static RecipeDao recipeDao;
+
+    private RecipeDao() {
+    }
+
+    public static AbstractEntityDAO<Recipe> getInstance() {
+        if (recipeDao == null) {
+            recipeDao = new RecipeDao();
+        }
+        return recipeDao;
+    }
 
     @Override
     protected Recipe getEntity(ResultSet rs) throws SQLException {
-        Patient patient = new PatientDao().getById(rs.getLong("PATIENTID"));
-        Doctor doctor = new DoctorDao().getById(rs.getLong("DOCTORID"));
-        RecipePriority recipePriority = new RecipePriorityDao().getById(rs.getLong("PRIORITYID"));
+        Patient patient = PatientDao.getInstance().getById(rs.getLong("PATIENTID"));
+        Doctor doctor = DoctorDao.getInstance().getById(rs.getLong("DOCTORID"));
+        RecipePriority recipePriority = RecipePriorityDao.getInstance().getById(rs.getLong("PRIORITYID"));
 
         return new Recipe(rs.getLong("ID"),
                 rs.getString("DESCRIPTION"),
@@ -42,12 +53,7 @@ public class RecipeDao extends AbstractEntityDAO<Recipe> {
     protected PreparedStatement getPreparedStatementForUpdate(Connection connection, Recipe recipe) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement(
                 "UPDATE RECIPES SET DESCRIPTION = ?, PATIENTID = ?, DOCTORID = ?, CREATIONDATE = ?, VALIDITY = ?, PRIORITYID = ? WHERE ID = ?");
-        preparedStatement.setString(1, recipe.getDescription());
-        preparedStatement.setLong(2, recipe.getPatient().getId());
-        preparedStatement.setLong(3, recipe.getDoctor().getId());
-        preparedStatement.setDate(4, recipe.getCreationDate());
-        preparedStatement.setInt(5, recipe.getValidity());
-        preparedStatement.setLong(6, recipe.getPriority().getId());
+        setValues(preparedStatement, recipe);
         preparedStatement.setLong(7, recipe.getId());
         return preparedStatement;
     }
@@ -56,12 +62,7 @@ public class RecipeDao extends AbstractEntityDAO<Recipe> {
     protected PreparedStatement getPreparedStatementForAdd(Connection connection, Recipe recipe) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement(
                 "INSERT INTO RECIPES (DESCRIPTION, PATIENTID, DOCTORID, CREATIONDATE, VALIDITY, PRIORITYID) VALUES (?, ?, ?, ?, ?, ?)");
-        preparedStatement.setString(1, recipe.getDescription());
-        preparedStatement.setLong(2, recipe.getPatient().getId());
-        preparedStatement.setLong(3, recipe.getDoctor().getId());
-        preparedStatement.setDate(4, recipe.getCreationDate());
-        preparedStatement.setInt(5, recipe.getValidity());
-        preparedStatement.setLong(6, recipe.getPriority().getId());
+        setValues(preparedStatement, recipe);
         return preparedStatement;
     }
 
@@ -90,5 +91,14 @@ public class RecipeDao extends AbstractEntityDAO<Recipe> {
             printSQLException(e);
         }
         return list;
+    }
+
+    private void setValues(PreparedStatement preparedStatement, Recipe recipe) throws SQLException {
+        preparedStatement.setString(1, recipe.getDescription());
+        preparedStatement.setLong(2, recipe.getPatient().getId());
+        preparedStatement.setLong(3, recipe.getDoctor().getId());
+        preparedStatement.setDate(4, recipe.getCreationDate());
+        preparedStatement.setInt(5, recipe.getValidity());
+        preparedStatement.setLong(6, recipe.getPriority().getId());
     }
 }

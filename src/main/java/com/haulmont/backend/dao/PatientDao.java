@@ -1,10 +1,24 @@
 package com.haulmont.backend.dao;
 
 import com.haulmont.backend.Patient;
+import com.haulmont.backend.Recipe;
 
 import java.sql.*;
+import java.util.List;
 
 public class PatientDao extends AbstractEntityDAO<Patient> {
+    private static PatientDao patientDao;
+
+    private PatientDao() {
+
+    }
+
+    public static synchronized AbstractEntityDAO<Patient> getInstance() {
+        if (patientDao == null) {
+            patientDao = new PatientDao();
+        }
+        return patientDao;
+    }
 
     @Override
     protected Patient getEntity(ResultSet rs) throws SQLException {
@@ -31,10 +45,7 @@ public class PatientDao extends AbstractEntityDAO<Patient> {
     protected PreparedStatement getPreparedStatementForUpdate(Connection connection, Patient patient) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement(
                 "UPDATE PATIENTS SET NAME = ?, LASTNAME = ?, PATRONYMIC = ?, PHONE = ? WHERE ID = ?");
-        preparedStatement.setString(1, patient.getName());
-        preparedStatement.setString(2, patient.getLastName());
-        preparedStatement.setString(3, patient.getPatronymic());
-        preparedStatement.setString(4, patient.getPhone());
+        setValues(preparedStatement, patient);
         preparedStatement.setLong(5, patient.getId());
         return preparedStatement;
     }
@@ -43,10 +54,7 @@ public class PatientDao extends AbstractEntityDAO<Patient> {
     protected PreparedStatement getPreparedStatementForAdd(Connection connection, Patient patient) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement(
                 "INSERT INTO PATIENTS (NAME, LASTNAME, PATRONYMIC, PHONE) VALUES (?, ?, ?, ?)");
-        preparedStatement.setString(1, patient.getName());
-        preparedStatement.setString(2, patient.getLastName());
-        preparedStatement.setString(3, patient.getPatronymic());
-        preparedStatement.setString(4, patient.getPhone());
+        setValues(preparedStatement, patient);
         return preparedStatement;
     }
 
@@ -55,5 +63,12 @@ public class PatientDao extends AbstractEntityDAO<Patient> {
         PreparedStatement preparedStatement = connection.prepareStatement("DELETE FROM PATIENTS WHERE ID = ?");
         preparedStatement.setLong(1, id);
         return preparedStatement;
+    }
+
+    private void setValues(PreparedStatement preparedStatement, Patient patient) throws SQLException {
+        preparedStatement.setString(1, patient.getName());
+        preparedStatement.setString(2, patient.getLastName());
+        preparedStatement.setString(3, patient.getPatronymic());
+        preparedStatement.setString(4, patient.getPhone());
     }
 }

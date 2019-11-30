@@ -1,12 +1,25 @@
 package com.haulmont.backend.dao;
 
 import com.haulmont.backend.Doctor;
+import com.haulmont.backend.Patient;
 
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 
 public class DoctorDao extends AbstractEntityDAO<Doctor> {
+    private static DoctorDao doctorDao;
+
+    private DoctorDao() {
+
+    }
+
+    public static synchronized AbstractEntityDAO<Doctor> getInstance() {
+        if (doctorDao == null) {
+            doctorDao = new DoctorDao();
+        }
+        return doctorDao;
+    }
 
     @Override
     protected Doctor getEntity(ResultSet rs) throws SQLException {
@@ -33,10 +46,7 @@ public class DoctorDao extends AbstractEntityDAO<Doctor> {
     protected PreparedStatement getPreparedStatementForUpdate(Connection connection, Doctor doctor) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement(
                 "UPDATE DOCTORS SET NAME = ?, LASTNAME = ?, PATRONYMIC = ?, SPECIALIZATION = ? WHERE ID = ?");
-        preparedStatement.setString(1, doctor.getName());
-        preparedStatement.setString(2, doctor.getLastName());
-        preparedStatement.setString(3, doctor.getPatronymic());
-        preparedStatement.setString(4, doctor.getSpecialization());
+        setValues(preparedStatement, doctor);
         preparedStatement.setLong(5, doctor.getId());
         return preparedStatement;
     }
@@ -45,10 +55,7 @@ public class DoctorDao extends AbstractEntityDAO<Doctor> {
     protected PreparedStatement getPreparedStatementForAdd(Connection connection, Doctor doctor) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement(
                 "INSERT INTO DOCTORS (NAME, LASTNAME, PATRONYMIC, SPECIALIZATION) VALUES (?, ?, ?, ?)");
-        preparedStatement.setString(1, doctor.getName());
-        preparedStatement.setString(2, doctor.getLastName());
-        preparedStatement.setString(3, doctor.getPatronymic());
-        preparedStatement.setString(4, doctor.getSpecialization());
+        setValues(preparedStatement, doctor);
         return preparedStatement;
     }
 
@@ -79,5 +86,12 @@ public class DoctorDao extends AbstractEntityDAO<Doctor> {
             printSQLException(e);
         }
         return map;
+    }
+
+    private void setValues(PreparedStatement preparedStatement, Doctor doctor) throws SQLException {
+        preparedStatement.setString(1, doctor.getName());
+        preparedStatement.setString(2, doctor.getLastName());
+        preparedStatement.setString(3, doctor.getPatronymic());
+        preparedStatement.setString(4, doctor.getSpecialization());
     }
 }
