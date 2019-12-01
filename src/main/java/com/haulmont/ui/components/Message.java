@@ -18,7 +18,7 @@ public abstract class Message {
         return "Описание должно содержать больше 10 символов";
     }
 
-    public static String notNullError(String type) {
-        return "Поле " + type + " не может быть пустым";
+    public static String notEmptyError(String type) {
+        return "Поле \"" + type + "\" не может быть пустым";
     }
 }

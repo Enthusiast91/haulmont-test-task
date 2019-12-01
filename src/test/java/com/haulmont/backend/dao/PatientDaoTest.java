@@ -5,7 +5,7 @@ import com.haulmont.backend.Patient;
 public class PatientDaoTest extends AbstractEntityDAOTest<Patient> {
 
     public PatientDaoTest() {
-        super(PatientDao.getInstance());
+        super(new PatientDao());
     }
 
     @Override
@@ -13,7 +13,7 @@ public class PatientDaoTest extends AbstractEntityDAOTest<Patient> {
         patient.setName("UpdateName");
         patient.setLastName("UpdateLastName");
         patient.setPatronymic("UpdatePatronymic");
-        patient.setPhone("81110000000");
+        patient.setPhone("81110000022");
         return patient;
     }
 

@@ -1,40 +1,50 @@
 package com.haulmont.ui.views;
 
-import com.haulmont.backend.Doctor;
-import com.haulmont.backend.Patient;
-import com.haulmont.backend.Recipe;
-import com.haulmont.backend.RecipePriority;
-import com.haulmont.backend.dao.*;
+import com.haulmont.backend.*;
+import com.haulmont.backend.dao.DoctorDao;
+import com.haulmont.backend.dao.PatientDao;
+import com.haulmont.backend.dao.RecipeDao;
+import com.haulmont.backend.dao.RecipePriorityDao;
+import com.haulmont.ui.components.Action;
 import com.haulmont.ui.components.Message;
 import com.haulmont.ui.components.Validation;
-import com.vaadin.data.ValueProvider;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.IntegerRangeValidator;
-import com.vaadin.server.Setter;
 import com.vaadin.ui.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RecipesView extends AbstractView<Recipe> {
-    private List<Patient> patients;
-    private List<Doctor> doctors;
-    private List<RecipePriority> recipePriorities;
+    private final List<Patient> patients = new ArrayList<>();
+    private final List<Doctor> doctors = new ArrayList<>();
+    private final List<RecipePriority> priorities = new ArrayList<>();
+
+    private ComboBox<RecipePriority> priorityComboBox;
+    private ComboBox<Patient> patientComboBox;
+    private ComboBox<Doctor> doctorComboBox;
+    private DateField creationDateField;
+    private TextArea descriptionField;
+    private TextField validityField;
 
     public RecipesView() {
-        super("РЕЦЕПТЫ", RecipeDao.getInstance());
+        super("РЕЦЕПТЫ", new RecipeDao());
+        addLocalComponents(this);
+        addComponent(grid);
+        setExpandRatio(grid, 1);
     }
 
     @Override
     protected void localEnter() {
         patients.clear();
-        patients.addAll(PatientDao.getInstance().getAll());
+        patients.addAll(new PatientDao().getAll());
 
         doctors.clear();
-        doctors.addAll(DoctorDao.getInstance().getAll());
+        doctors.addAll(new DoctorDao().getAll());
 
-        recipePriorities.clear();
-        recipePriorities.addAll(RecipePriorityDao.getInstance().getAll());
+        priorities.clear();
+        priorities.addAll(new RecipePriorityDao().getAll());
     }
 
     @Override
@@ -55,31 +65,73 @@ public class RecipesView extends AbstractView<Recipe> {
     }
 
     @Override
+    protected void addLocalComponents(VerticalLayout outerLayout) {
+        HorizontalLayout filterLayout = new HorizontalLayout();
+        Panel panel = new Panel("ФИЛЬТР", filterLayout);
+        filterLayout.setMargin(true);
+        panel.setHeightUndefined();
+
+        ComboBox<Patient> patientFilterComboBox = new ComboBox<>("ПАЦИЕНТ");
+        patientFilterComboBox.setItems(patients);
+        patientFilterComboBox.setItemCaptionGenerator(Patient::getFullName);
+        patientFilterComboBox.setWidth("220px");
+
+        ComboBox<RecipePriority> priorityFilterComboBox = new ComboBox<>("ПРИОРИТЕТ");
+        priorityFilterComboBox.setItems(priorities);
+        priorityFilterComboBox.setItemCaptionGenerator(RecipePriority::getTitle);
+        priorityFilterComboBox.setTextInputAllowed(false);
+
+        TextField descriptionFilterField = new TextField("ОПИСАНИЕ");
+        descriptionFilterField.setWidth("220px");
+
+        Button buttonFilterAccept = new Button("ПРИМЕНИТЬ");
+        buttonFilterAccept.addClickListener(event -> {
+            Patient patient = patientFilterComboBox.getValue();
+            RecipePriority priority = priorityFilterComboBox.getValue();
+            String description = descriptionFilterField.getValue();
+
+            long patientID = patient == null ? -1 : patient.getId();
+            long priorityID = priority == null ? -1 : priority.getId();
+
+            entityList.clear();
+            entityList.addAll(((RecipeDao) entityDao).getAllFiltered(patientID, priorityID, description));
+            grid.getDataProvider().refreshAll();
+        });
+
+        filterLayout.addComponents(patientFilterComboBox, priorityFilterComboBox, descriptionFilterField, buttonFilterAccept);
+        filterLayout.setComponentAlignment(buttonFilterAccept, Alignment.BOTTOM_CENTER);
+        outerLayout.addComponent(panel);
+    }
+
+    @Override
     protected FormLayout createInputFormLayout(Action action) {
         FormLayout formLayout = new FormLayout();
         formLayout.setWidth("500px");
 
-        ComboBox<Patient> patientComboBox = createComboBoxForInputForm(patients, "ПАЦИЕНТ");
+        priorityComboBox = createComboBoxForInputForm(priorities, "ПРИОРИТЕТ");
+        patientComboBox = createComboBoxForInputForm(patients, "ПАЦИЕНТ");
+        doctorComboBox = createComboBoxForInputForm(doctors, "ВРАЧ");
+        creationDateField = new DateField("ДАТА СОЗДАНИЯ");
+        descriptionField = new TextArea("ОПИСАНИЕ");
+        validityField = new TextField("СРОК ДЕЙСТВИЯ");
+
         patientComboBox.setItemCaptionGenerator(Patient::getFullName);
-
-        ComboBox<Doctor> doctorComboBox = createComboBoxForInputForm(doctors, "ВРАЧ");
         doctorComboBox.setItemCaptionGenerator(Doctor::getFullName);
-
-        DateField creationDateField = new DateField("ДАТА СОЗДАНИЯ");
-        creationDateField.setWidth(100.0f, Unit.PERCENTAGE);
-        creationDateField.setValue(LocalDate.now());
-
-        TextField validityField = new TextField("СРОК ДЕЙСТВИЯ");
-        validityField.setWidth(100.0f, Unit.PERCENTAGE);
-
-        Label unlimitedLabel = new Label("0 = неограниченный срок");
-        unlimitedLabel.setEnabled(false);
-
-        ComboBox<RecipePriority> priorityComboBox = createComboBoxForInputForm(recipePriorities, "ПРИОРИТЕТ");
         priorityComboBox.setItemCaptionGenerator(RecipePriority::getTitle);
         priorityComboBox.setTextInputAllowed(false);
 
-        TextArea descriptionField = new TextArea("ОПИСАНИЕ");
+        creationDateField.setWidth(100.0f, Unit.PERCENTAGE);
+        if (action == Action.ADD) {
+            creationDateField.setValue(LocalDate.now());
+            creationDateField.setRangeStart(LocalDate.now());
+        } else {
+            creationDateField.setReadOnly(true);
+        }
+
+        validityField.setWidth(100.0f, Unit.PERCENTAGE);
+        Label unlimitedLabel = new Label("0 = неограниченный срок");
+        unlimitedLabel.setEnabled(false);
+
         descriptionField.setWidth(100.0f, Unit.PERCENTAGE);
 
         bindingFields(action, patientComboBox, doctorComboBox, creationDateField, validityField, priorityComboBox, descriptionField);
@@ -95,46 +147,12 @@ public class RecipesView extends AbstractView<Recipe> {
     }
 
     @Override
-    protected void addOtherComponents(VerticalLayout outerLayout) {
-        patients = PatientDao.getInstance().getAll();
-        doctors = DoctorDao.getInstance().getAll();
-        recipePriorities = RecipePriorityDao.getInstance().getAll();
-
-        HorizontalLayout layout = new HorizontalLayout();
-        Panel panel = new Panel("ФИЛЬТР", layout);
-        layout.setMargin(true);
-        panel.setHeightUndefined();
-
-        ComboBox<Patient> patientComboBox = new ComboBox<>("ПАЦИЕНТ");
-        patientComboBox.setItems(patients);
-        patientComboBox.setItemCaptionGenerator(Patient::getFullName);
-        patientComboBox.setWidth("220px");
-
-        ComboBox<RecipePriority> priorityComboBox = new ComboBox<>("ПРИОРИТЕТ");
-        priorityComboBox.setItems(recipePriorities);
-        priorityComboBox.setItemCaptionGenerator(RecipePriority::getTitle);
-        priorityComboBox.setTextInputAllowed(false);
-
-        TextField descriptionField = new TextField("ОПИСАНИЕ");
-        descriptionField.setWidth("220px");
-
-        Button buttonAccept = new Button("ПРИМЕНИТЬ");
-        buttonAccept.addClickListener(event -> {
-            Patient patient = patientComboBox.getValue();
-            RecipePriority priority = priorityComboBox.getValue();
-            String description = descriptionField.getValue();
-
-            long patientID = patient == null ? -1 : patient.getId();
-            long priorityID = priority == null ? -1 : priority.getId();
-
-            entityList.clear();
-            entityList.addAll(((RecipeDao) entityDao).getFiltered(patientID, priorityID, description));
-            grid.getDataProvider().refreshAll();
-        });
-
-        layout.addComponents(patientComboBox, priorityComboBox, descriptionField, buttonAccept);
-        layout.setComponentAlignment(buttonAccept, Alignment.BOTTOM_CENTER);
-        outerLayout.addComponent(panel);
+    public boolean fieldNotValid() {
+        return !Validation.notNull(patientComboBox.getValue())
+                || !Validation.notNull(doctorComboBox.getValue())
+                || !Validation.notNull(creationDateField.getValue())
+                || !Validation.validityIsValid(validityField.getValue())
+                || !Validation.descriptionIsValid(descriptionField.getValue());
     }
 
     private void bindingFields(Action action,
@@ -152,16 +170,16 @@ public class RecipesView extends AbstractView<Recipe> {
         }
 
         binder.forField(patientComboBox)
-                .withValidator(Validation::notNull, Message.notNullError("\"Пациент\""))
+                .withValidator(Validation::notNull, Message.notEmptyError("Пациент"))
                 .bind(Recipe::getPatient, Recipe::setPatient);
         binder.forField(doctorComboBox)
-                .withValidator(Validation::notNull, Message.notNullError("\"Доктор\""))
+                .withValidator(Validation::notNull, Message.notEmptyError("Доктор"))
                 .bind(Recipe::getDoctor, Recipe::setDoctor);
         binder.forField(creationDateField)
-                .withValidator(Validation::notNull, Message.notNullError("\"Дата создания\""))
+                .withValidator(Validation::notNull, Message.notEmptyError("Дата"))
                 .bind(r -> r.getCreationDate().toLocalDate(), Recipe::setCreationDate);
         binder.forField(validityField)
-                .withValidator(Validation::notNull, Message.notNullError("\"Срок\""))
+                .withValidator(Validation::notEmpty, Message.notEmptyError("Срок"))
                 .withConverter(new StringToIntegerConverter("Невозможно преобразовать в целое число"))
                 .withValidator(new IntegerRangeValidator("Максимально 10 лет, либо неограниченный", 0, 3650))
                 .bind(Recipe::getValidity, Recipe::setValidity);

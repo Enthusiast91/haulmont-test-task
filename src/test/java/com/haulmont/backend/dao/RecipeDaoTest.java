@@ -12,7 +12,7 @@ import java.util.List;
 
 public class RecipeDaoTest extends AbstractEntityDAOTest<Recipe> {
     public RecipeDaoTest() {
-        super(RecipeDao.getInstance());
+        super(new RecipeDao());
     }
 
     @Override
@@ -31,8 +31,8 @@ public class RecipeDaoTest extends AbstractEntityDAOTest<Recipe> {
     @Override
     protected Recipe getNewEntity() {
         long id = 0;
-        Doctor doctor = new DoctorDaoTest().getNewEntity();
-        Patient patient = new PatientDaoTest().getNewEntity();
+        Doctor doctor = new DoctorDao().getById(0);
+        Patient patient = new PatientDao().getById(0);
         String description = "New Desription for new recipe";
         Date creationDate = Date.valueOf(LocalDate.now());
         short validity = 438;
@@ -43,7 +43,7 @@ public class RecipeDaoTest extends AbstractEntityDAOTest<Recipe> {
 
     @Test
     public void getFilteredTest() {
-        List<Recipe> recipes = ((RecipeDao) entityDAO).getFiltered(-1, RecipePriority.STATIM.getId(), "");
+        List<Recipe> recipes = ((RecipeDao) entityDAO).getAllFiltered(-1, RecipePriority.STATIM.getId(), "");
         for (Recipe recipe : recipes) {
             System.out.println(recipe);
         }

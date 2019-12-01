@@ -1,4 +1,4 @@
-package com.haulmont.backend.dao;
+package com.haulmont.backend;
 
 public interface Entity {
     long getId();

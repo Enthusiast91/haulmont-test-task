@@ -1,5 +1,6 @@
 package com.haulmont.backend.dao;
 
+import com.haulmont.backend.Entity;
 import org.junit.*;
 
 import static org.junit.Assert.*;
@@ -37,37 +38,32 @@ public abstract class AbstractEntityDAOTest<E extends Entity> {
     @Test
     public void updateTest() {
         long id = 0;
-        E entity = entityDAO.getById(id);
-        System.out.println("Before update:\n" + entity);
+        E entityOld = entityDAO.getById(id);
+        entityOld = getUpdateEntity(entityOld);
+        entityDAO.update(entityOld);
+        E entityUpd = entityDAO.getById(id);
 
-        entity = getUpdateEntity(entity);
-        entityDAO.update(entity);
-        entity = entityDAO.getById(id);
-        System.out.println("After update:\n" + entity);
+        assertEquals(entityOld, entityUpd);
     }
 
     @Test
     public void addTest() {
-        E entity = getNewEntity();
-        System.out.println("Added entity:\n" + entity);
-
-        entityDAO.add(entity);
+        E entityAdded = getNewEntity();
+        boolean added = entityDAO.add(entityAdded);
         List<E> entities = entityDAO.getAll();
-        E lastEntity = entities.get(entities.size() - 1);
-        System.out.println("Last entity from BD:\n" + lastEntity);
+        boolean contains = entities.contains(entityAdded);
+
+        assertTrue(added);
+        assertTrue(contains);
     }
 
     @Test
     public void deleteTest() {
-        //entityDAO.add(getNewEntity());
-        List<E> entities = entityDAO.getAll();
-        int entitiesSize = entities.size();
-        System.out.println("Delete:\nSize before delete = " + entitiesSize);
-
+        entityDAO.add(getNewEntity());
+        int entitiesSize = entityDAO.getAll().size();
         entityDAO.delete((long) (entitiesSize - 1));
-        List<E> entitiesAfterDelete = entityDAO.getAll();
-        int entitiesSizeAfterDelete = entitiesAfterDelete.size();
-        System.out.println("Size after delete = " + entitiesSizeAfterDelete);
+        int entitiesSizeAfterDelete = entityDAO.getAll().size();
+
         assertEquals(entitiesSize - 1, entitiesSizeAfterDelete);
     }
 }

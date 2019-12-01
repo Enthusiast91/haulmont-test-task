@@ -1,76 +1,79 @@
 package com.haulmont.ui.views;
 
 import com.haulmont.backend.dao.AbstractEntityDAO;
+import com.haulmont.ui.components.Action;
+import com.haulmont.ui.components.InputFormWindow;
 import com.haulmont.ui.components.Viewable;
 import com.vaadin.data.Binder;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
-import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractView<E extends Viewable<E>> extends VerticalLayout implements View {
     protected final AbstractEntityDAO<E> entityDao;
-    protected List<E> entityList;
-    protected Binder<E> binder;
-    protected Grid<E> grid;
+    protected final List<E> entityList;
+    protected final Binder<E> binder;
+    protected final Grid<E> grid;
+
+    protected AbstractView(String labelText, AbstractEntityDAO<E> entityDao) {
+        this.entityDao = entityDao;
+        Label label = new Label(labelText);
+        entityList = new ArrayList<>();
+        binder = new Binder<>();
+        grid = createGrid();
+        grid.setSizeFull();
+        grid.setItems(entityList);
+        grid.asSingleSelect().addValueChangeListener(event -> {
+            if (event.getValue() == null) {
+                binder.setBean(null);
+                return;
+            }
+            binder.setBean(event.getValue().getCopy());
+        });
+
+        setSizeFull();
+        addComponents(label, getToolsLayout());
+    }
 
     protected abstract void localEnter();
 
     protected abstract Grid<E> createGrid();
 
-    protected abstract void addOtherComponents(VerticalLayout layout);
+    protected abstract void addLocalComponents(VerticalLayout layout);
 
     protected abstract FormLayout createInputFormLayout(Action action);
 
-    protected AbstractView(String labelText, AbstractEntityDAO<E> entityDao) {
-        this.entityDao = entityDao;
-        entityList = entityDao.getAll();
-        binder = new Binder<>();
-        grid = createGrid();
-        Label label = new Label(labelText);
-        grid.setSizeFull();
-        grid.addItemClickListener(event -> binder.setBean(event.getItem()));
-
-        setSizeFull();
-        addComponents(label, getToolsLayout());
-        addOtherComponents(this);
-        addComponent(grid);
-        setExpandRatio(grid, 1);
-    }
+    public abstract boolean fieldNotValid();
 
     @Override
     public void enter(ViewChangeListener.ViewChangeEvent event) {
-        entityList = entityDao.getAll();
-        grid.setItems(entityList);
-        grid.deselectAll();
-        binder.removeBean();
-        grid.getDataProvider().refreshAll();
+        updateGrid();
         localEnter();
     }
 
     private Layout getToolsLayout() {
         HorizontalLayout layout = new HorizontalLayout();
-        Button buttonAdd = createToolButton(VaadinIcons.PLUS, "ДОБАВИТЬ");
-        Button buttonEdit = createToolButton(VaadinIcons.EDIT, "РЕДАКТИРОВАТЬ");
-        Button buttonRemove = createToolButton(VaadinIcons.CLOSE, "УДАЛИТЬ");
 
+        Button buttonAdd = createToolButton(VaadinIcons.PLUS, "ДОБАВИТЬ");
         buttonAdd.addClickListener(event -> {
-            binder.removeBean();
             grid.deselectAll();
-            getUI().addWindow(createWindowForm(Action.ADD));
+            getUI().addWindow(createInputFormWindow(Action.ADD));
         });
 
+        Button buttonEdit = createToolButton(VaadinIcons.EDIT, "РЕДАКТИРОВАТЬ");
         buttonEdit.addClickListener(event -> {
-            if (binder.getBean() == null) {
+            if (grid.asSingleSelect().getValue() == null) {
                 Notification.show("Выберите строку");
                 return;
             }
-            getUI().addWindow(createWindowForm(Action.UPDATE));
+            getUI().addWindow(createInputFormWindow(Action.UPDATE));
         });
 
+        Button buttonRemove = createToolButton(VaadinIcons.CLOSE, "УДАЛИТЬ");
         buttonRemove.addClickListener(event -> {
             E entity = binder.getBean();
             if (entity == null) {
@@ -78,11 +81,10 @@ public abstract class AbstractView<E extends Viewable<E>> extends VerticalLayout
                 return;
             }
             if (!entityDao.delete(entity.getId())) {
-                Notification.show("Не может быть удален! Данный субъект связан с записью в базе данных.").setDelayMsec(2500);
+                Notification.show("Не может быть удален! Данный субъект связан с записью в базе данных.");
                 return;
             }
             entityList.remove(entity);
-            binder.removeBean();
             grid.getDataProvider().refreshAll();
         });
 
@@ -102,86 +104,42 @@ public abstract class AbstractView<E extends Viewable<E>> extends VerticalLayout
         return button;
     }
 
-    private Window createWindowForm(Action action) {
-        Window window = new Window();
-        HorizontalLayout layout = new HorizontalLayout();
-        HorizontalLayout buttonLayout = new HorizontalLayout();
-        Button acceptButton = new Button("ОК");
-        Button cancelButton = new Button("ОТМЕНИТЬ");
+    private Window createInputFormWindow(Action action) {
         FormLayout formLayout = createInputFormLayout(action);
-
-        window.setResizable(false);
-        window.setModal(true);
-        window.setClosable(false);
-        formLayout.setMargin(true);
-        buttonLayout.setMargin(new MarginInfo(true, false, false, false));
-
-        E selectedEntity = binder.getBean().getCopy();
-
-        acceptButton.addClickListener(event -> {
-            if (binder.isValid()) {
-                switch (action) {
-                    case ADD:
-                        doAdd(binder.getBean());
-                        binder.removeBean();
-                        break;
-                    case UPDATE:
-                        if (!doUpdate(selectedEntity)) {
-                            Notification.show("Данные идентичны");
-                            return;
-                        }
-                        break;
-                }
-                window.close();
-            } else {
-                Notification.show("Введены некорректные данные").setDelayMsec(100);
-            }
-        });
-
-        cancelButton.addClickListener(event -> {
-            if (action == Action.ADD) {
-                binder.removeBean();
-            }
-            window.close();
-        });
-
-        buttonLayout.addComponents(acceptButton, cancelButton);
-        formLayout.addComponent(buttonLayout);
-        layout.addComponent(formLayout);
-        window.setContent(layout);
-        return window;
+        return new InputFormWindow<>(this, formLayout, binder.getBean(), action);
     }
 
-    private boolean doAdd(E entity) {
-        if (!entityDao.add(entity)) {
-            return false;
-        }
+    private void updateGrid() {
         entityList.clear();
         entityList.addAll(entityDao.getAll());
         grid.getDataProvider().refreshAll();
+    }
+
+    public boolean doAdd(E entity) {
+        if (!entityDao.add(entity)) {
+            Notification.show("Запись не добавлена");
+            return false;
+        }
+        updateGrid();
         return true;
     }
 
-    private boolean doUpdate(E oldEntity) {
+    public boolean doUpdate(E oldEntity) {
+        if (fieldNotValid()) {
+            Notification.show("Поля не прошли валидацию");
+            return false;
+        }
         E entity = binder.getBean();
         if (entity.equals(oldEntity)) {
+            Notification.show("Данные идентичны");
             return false;
         }
         if (!entityDao.update(entity)) {
+            Notification.show("Запись не обнавлена");
             return false;
         }
-
-        entityList = entityDao.getAll();     //
-        grid.setItems(entityList);           // Костыль
-
-        grid.deselect(entity);
-        binder.removeBean();
-        grid.getDataProvider().refreshAll();
+        updateGrid();
+        grid.setItems(entityList);
         return true;
-    }
-
-    protected enum Action {
-        ADD,
-        UPDATE
     }
 }

@@ -1,5 +1,7 @@
 package com.haulmont.backend.dao;
 
+import com.haulmont.backend.Entity;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;

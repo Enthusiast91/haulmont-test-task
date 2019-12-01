@@ -11,7 +11,7 @@ import com.vaadin.ui.VerticalLayout;
 public class PatientsView extends AbstractPersonView<Patient> {
 
     public PatientsView() {
-        super("ПАЦИЕНТЫ", PatientDao.getInstance());
+        super("ПАЦИЕНТЫ", new PatientDao());
     }
 
     @Override
@@ -41,6 +41,12 @@ public class PatientsView extends AbstractPersonView<Patient> {
     }
 
     @Override
-    protected void addOtherComponents(VerticalLayout layout) {
+    public boolean fieldNotValid() {
+        return super.fieldNotValid()
+                || !Validation.phoneIsValid(personField.getValue());
+    }
+
+    @Override
+    protected void addLocalComponents(VerticalLayout layout) {
     }
 }

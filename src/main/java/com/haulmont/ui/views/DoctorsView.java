@@ -1,56 +1,58 @@
 package com.haulmont.ui.views;
 
 import com.haulmont.backend.Doctor;
-import com.haulmont.backend.Recipe;
 import com.haulmont.backend.dao.DoctorDao;
+import com.haulmont.ui.components.Validation;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.renderers.NumberRenderer;
-import com.vaadin.ui.renderers.Renderer;
 
-import java.util.Locale;
 import java.util.Map;
 
 public class DoctorsView extends AbstractPersonView<Doctor> {
-    private Button buttonStatictics;
+    private static final String COLUMN_QUANTITY_ID = "STATISTICS";
+    private Button buttonStatistics;
 
     public DoctorsView() {
-        super("ВРАЧИ", DoctorDao.getInstance());
+        super("ВРАЧИ", new DoctorDao());
     }
 
     @Override
     protected void localEnter() {
-        if (buttonStatictics.getData() != null) {
-            Map<Long, Integer> mapQuantityRecipes = ((DoctorDao) entityDao).getQuantityRecipes();
-            grid.removeColumn("STATISTICS");
-            grid.addColumn(doctor -> mapQuantityRecipes.get(doctor.getId())).setId("STATISTICS").setCaption("КОЛИЧЕСТВО РЕЦЕПТОВ");
+        if (buttonStatistics.getData() != null) {
+            grid.removeColumn(COLUMN_QUANTITY_ID);
+            addColumnQuantity();
         }
     }
 
     @Override
-    protected void addOtherComponents(VerticalLayout layout) {
-        buttonStatictics = new Button("Показать статистику");
-        buttonStatictics.setWidth("200px");
-        buttonStatictics.setIcon(VaadinIcons.EYE);
+    protected void addLocalComponents(VerticalLayout layout) {
+        buttonStatistics = new Button("Показать статистику");
+        buttonStatistics.setWidth("200px");
+        buttonStatistics.setIcon(VaadinIcons.EYE);
 
-        buttonStatictics.addClickListener(event -> {
-            if (buttonStatictics.getData() == null) {
-                Map<Long, Integer> mapQuantityRecipes = ((DoctorDao) entityDao).getQuantityRecipes();
-                grid.addColumn(doctor -> mapQuantityRecipes.get(doctor.getId())).setId("STATISTICS").setCaption("КОЛИЧЕСТВО РЕЦЕПТОВ");
-                buttonStatictics.setData(true);
-                buttonStatictics.setCaption("Убрать статистику");
-                buttonStatictics.setIcon(VaadinIcons.EYE_SLASH);
+        buttonStatistics.addClickListener(event -> {
+            if (buttonStatistics.getData() == null) {
+                addColumnQuantity();
+                buttonStatistics.setData(true);
+                buttonStatistics.setCaption("Убрать статистику");
+                buttonStatistics.setIcon(VaadinIcons.EYE_SLASH);
                 return;
             }
-            grid.removeColumn("STATISTICS");
-            buttonStatictics.setData(null);
-            buttonStatictics.setCaption("Показать статистику");
-            buttonStatictics.setIcon(VaadinIcons.EYE);
+            grid.removeColumn(COLUMN_QUANTITY_ID);
+            buttonStatistics.setData(null);
+            buttonStatistics.setCaption("Показать статистику");
+            buttonStatistics.setIcon(VaadinIcons.EYE);
         });
-        layout.addComponent(buttonStatictics);
+        layout.addComponent(buttonStatistics);
+    }
+
+    @Override
+    public boolean fieldNotValid() {
+        return super.fieldNotValid()
+                || !Validation.namedIsValid(personField.getValue());
     }
 
     @Override
@@ -71,5 +73,13 @@ public class DoctorsView extends AbstractPersonView<Doctor> {
     @Override
     protected void bindPersonField(TextField specializationField) {
         bindFieldOfNaming(specializationField, Doctor::getSpecialization, Doctor::setSpecialization);
+    }
+
+    private void addColumnQuantity() {
+        Map<Long, Integer> mapQuantity = ((DoctorDao) entityDao).getQuantityRecipes();
+        grid.addColumn(doctor -> {
+            Integer quantity = mapQuantity.get(doctor.getId());
+            return quantity == null ? 0 : quantity;
+        }).setId(COLUMN_QUANTITY_ID).setCaption("КОЛИЧЕСТВО РЕЦЕПТОВ");
     }
 }

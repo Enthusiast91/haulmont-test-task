@@ -1,7 +1,5 @@
 package com.haulmont.backend;
 
-import com.haulmont.backend.dao.Entity;
-
 public enum RecipePriority implements Entity {
     NORMAL("НОРМАЛЬНЫЙ"),
     CITO("СРОЧНЫЙ"),

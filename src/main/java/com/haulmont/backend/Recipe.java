@@ -1,6 +1,5 @@
 package com.haulmont.backend;
 
-import com.haulmont.backend.dao.Entity;
 import com.haulmont.ui.components.Viewable;
 
 import java.sql.Date;
@@ -16,6 +15,20 @@ public class Recipe implements Entity, Viewable<Recipe> {
     private RecipePriority priority;
     private Patient patient;
     private Doctor doctor;
+
+    public Recipe(long id, String description, Date creationDate, int validity, Doctor doctor, Patient patient, RecipePriority priority) {
+        this.id = id;
+        this.description = description;
+        this.creationDate = creationDate;
+        this.validity = validity;
+        this.doctor = doctor;
+        this.patient = patient;
+        this.priority = priority;
+    }
+
+    public static Recipe getEmpty() {
+        return new Recipe(0, "", Date.valueOf(LocalDate.now()), (short) 0, null, null, RecipePriority.NORMAL);
+    }
 
     public String getDescription() {
         return description;
@@ -65,20 +78,6 @@ public class Recipe implements Entity, Viewable<Recipe> {
         this.doctor = doctor;
     }
 
-    public static Recipe getEmpty() {
-        return new Recipe(0, "", Date.valueOf(LocalDate.now()), (short) 0, null, null, RecipePriority.NORMAL);
-    }
-
-    public Recipe(long id, String description, Date creationDate, int validity, Doctor doctor, Patient patient, RecipePriority priority) {
-        this.id = id;
-        this.description = description;
-        this.creationDate = creationDate;
-        this.validity = validity;
-        this.doctor = doctor;
-        this.patient = patient;
-        this.priority = priority;
-    }
-
     @Override
     public long getId() {
         return id;
@@ -94,13 +93,12 @@ public class Recipe implements Entity, Viewable<Recipe> {
         if (this == o) return true;
         if (!(o instanceof Recipe)) return false;
         Recipe recipe = (Recipe) o;
-        return id == recipe.id &&
-                validity == recipe.validity &&
+        return validity == recipe.validity &&
                 Objects.equals(description, recipe.description) &&
                 Objects.equals(creationDate, recipe.creationDate) &&
                 priority == recipe.priority &&
-                Objects.equals(patient, recipe.patient) &&
-                Objects.equals(doctor, recipe.doctor);
+                patient.equals(recipe.patient) &&
+                doctor.equals(recipe.doctor);
     }
 
     @Override

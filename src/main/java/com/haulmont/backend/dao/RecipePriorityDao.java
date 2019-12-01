@@ -5,16 +5,6 @@ import com.haulmont.backend.RecipePriority;
 import java.sql.*;
 
 public class RecipePriorityDao extends AbstractEntityDAO<RecipePriority> {
-    private static RecipePriorityDao recipePriorityDao;
-
-    private RecipePriorityDao() {}
-
-    public static AbstractEntityDAO<RecipePriority> getInstance() {
-        if (recipePriorityDao == null) {
-            recipePriorityDao = new RecipePriorityDao();
-        }
-        return recipePriorityDao;
-    }
 
     @Override
     protected RecipePriority getEntity(ResultSet rs) throws SQLException {

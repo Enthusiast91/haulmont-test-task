@@ -5,11 +5,8 @@ import java.util.Objects;
 public class Patient extends AbstractPerson<Patient> {
     private String phone;
 
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
+    public Patient(long id, String name, String lastName, String patronymic, String phone) {
+        super(id, name, lastName, patronymic);
         this.phone = phone;
     }
 
@@ -17,8 +14,11 @@ public class Patient extends AbstractPerson<Patient> {
         return new Patient(0, "", "", "", "");
     }
 
-    public Patient(long id, String name, String lastName, String patronymic, String phone) {
-        super(id, name, lastName, patronymic);
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
         this.phone = phone;
     }
 

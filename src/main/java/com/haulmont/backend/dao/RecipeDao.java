@@ -10,23 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RecipeDao extends AbstractEntityDAO<Recipe> {
-    private static RecipeDao recipeDao;
-
-    private RecipeDao() {
-    }
-
-    public static AbstractEntityDAO<Recipe> getInstance() {
-        if (recipeDao == null) {
-            recipeDao = new RecipeDao();
-        }
-        return recipeDao;
-    }
 
     @Override
     protected Recipe getEntity(ResultSet rs) throws SQLException {
-        Patient patient = PatientDao.getInstance().getById(rs.getLong("PATIENTID"));
-        Doctor doctor = DoctorDao.getInstance().getById(rs.getLong("DOCTORID"));
-        RecipePriority recipePriority = RecipePriorityDao.getInstance().getById(rs.getLong("PRIORITYID"));
+        Patient patient = new PatientDao().getById(rs.getLong("PATIENTID"));
+        Doctor doctor = new DoctorDao().getById(rs.getLong("DOCTORID"));
+        RecipePriority recipePriority = new RecipePriorityDao().getById(rs.getLong("PRIORITYID"));
 
         return new Recipe(rs.getLong("ID"),
                 rs.getString("DESCRIPTION"),
@@ -73,7 +62,7 @@ public class RecipeDao extends AbstractEntityDAO<Recipe> {
         return preparedStatement;
     }
 
-    public List<Recipe> getFiltered(long patientID, long priorityID, String description) {
+    public List<Recipe> getAllFiltered(long patientID, long priorityID, String description) {
         List<Recipe> list = null;
         String patientFilter = patientID > -1 ? " AND PATIENTID = " + patientID : "";
         String priorityFilter = priorityID > -1 ? " AND PRIORITYID = " + priorityID : "";

@@ -1,24 +1,10 @@
 package com.haulmont.backend.dao;
 
 import com.haulmont.backend.Patient;
-import com.haulmont.backend.Recipe;
 
 import java.sql.*;
-import java.util.List;
 
 public class PatientDao extends AbstractEntityDAO<Patient> {
-    private static PatientDao patientDao;
-
-    private PatientDao() {
-
-    }
-
-    public static synchronized AbstractEntityDAO<Patient> getInstance() {
-        if (patientDao == null) {
-            patientDao = new PatientDao();
-        }
-        return patientDao;
-    }
 
     @Override
     protected Patient getEntity(ResultSet rs) throws SQLException {

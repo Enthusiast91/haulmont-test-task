@@ -2,6 +2,7 @@ package com.haulmont.ui.views;
 
 import com.haulmont.backend.AbstractPerson;
 import com.haulmont.backend.dao.AbstractEntityDAO;
+import com.haulmont.ui.components.Action;
 import com.haulmont.ui.components.Message;
 import com.haulmont.ui.components.Validation;
 import com.vaadin.data.ValueProvider;
@@ -11,6 +12,17 @@ import com.vaadin.ui.Grid;
 import com.vaadin.ui.TextField;
 
 public abstract class AbstractPersonView<E extends AbstractPerson<E>> extends AbstractView<E> {
+    protected final TextField nameField = new TextField("ИМЯ");
+    protected final TextField lastNameField = new TextField("ФАМИЛИЯ");
+    protected final TextField patronymicField = new TextField("ОТЧЕСТВО");
+    protected final TextField personField = getPersonField();
+
+    public AbstractPersonView(String labelText, AbstractEntityDAO<E> entityDao) {
+        super(labelText, entityDao);
+        addLocalComponents(this);
+        addComponent(grid);
+        setExpandRatio(grid, 1);
+    }
 
     protected abstract void addGridColumn(Grid<E> grid);
 
@@ -19,10 +31,6 @@ public abstract class AbstractPersonView<E extends AbstractPerson<E>> extends Ab
     protected abstract TextField getPersonField();
 
     protected abstract void bindPersonField(TextField personField);
-
-    public AbstractPersonView(String labelText, AbstractEntityDAO<E> entityDao) {
-        super(labelText, entityDao);
-    }
 
     @Override
     protected Grid<E> createGrid() {
@@ -37,11 +45,6 @@ public abstract class AbstractPersonView<E extends AbstractPerson<E>> extends Ab
     @Override
     protected FormLayout createInputFormLayout(Action action) {
         FormLayout formLayout = new FormLayout();
-        TextField nameField = new TextField("ИМЯ");
-        TextField lastNameField = new TextField("ФАМИЛИЯ");
-        TextField patronymicField = new TextField("ОТЧЕСТВО");
-
-        TextField personField = getPersonField();
 
         E entity;
         if (action == Action.ADD) {
@@ -57,8 +60,22 @@ public abstract class AbstractPersonView<E extends AbstractPerson<E>> extends Ab
 
         bindPersonField(personField);
 
+        if (action == Action.ADD) {
+            nameField.clear();
+            lastNameField.clear();
+            patronymicField.clear();
+            personField.clear();
+        }
+
         formLayout.addComponents(nameField, lastNameField, patronymicField, personField);
         return formLayout;
+    }
+
+    @Override
+    public boolean fieldNotValid() {
+        return !Validation.namedIsValid(nameField.getValue())
+                || !Validation.namedIsValid(lastNameField.getValue())
+                || !Validation.namedIsValid(patronymicField.getValue());
     }
 
     protected void bindFieldOfNaming(TextField field, ValueProvider<E, String> getter, Setter<E, String> setter) {

@@ -10,6 +10,13 @@ public abstract class AbstractPerson<E> implements Viewable<E> {
     protected String lastName;
     protected String patronymic;
 
+    protected AbstractPerson(long id, String name, String lastName, String patronymic) {
+        this.id = id;
+        this.name = name;
+        this.lastName = lastName;
+        this.patronymic = patronymic;
+    }
+
     public String getName() {
         return name;
     }
@@ -38,20 +45,12 @@ public abstract class AbstractPerson<E> implements Viewable<E> {
         return getName() + " " + getLastName();
     }
 
-    protected AbstractPerson(long id, String name, String lastName, String patronymic) {
-        this.id = id;
-        this.name = name;
-        this.lastName = lastName;
-        this.patronymic = patronymic;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof AbstractPerson)) return false;
         AbstractPerson<?> that = (AbstractPerson<?>) o;
-        return id == that.id &&
-                Objects.equals(name, that.name) &&
+        return Objects.equals(name, that.name) &&
                 Objects.equals(lastName, that.lastName) &&
                 Objects.equals(patronymic, that.patronymic);
     }
