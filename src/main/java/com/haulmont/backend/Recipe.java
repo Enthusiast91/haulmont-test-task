@@ -27,7 +27,7 @@ public class Recipe implements Entity, Viewable<Recipe> {
     }
 
     public static Recipe getEmpty() {
-        return new Recipe(0, "", Date.valueOf(LocalDate.now()), (short) 0, null, null, RecipePriority.NORMAL);
+        return new Recipe(0, "", Date.valueOf(LocalDate.now()), 0, null, null, RecipePriority.NORMAL);
     }
 
     public String getDescription() {

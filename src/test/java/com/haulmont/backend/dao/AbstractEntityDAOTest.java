@@ -59,9 +59,13 @@ public abstract class AbstractEntityDAOTest<E extends Entity> {
 
     @Test
     public void deleteTest() {
-        entityDAO.add(getNewEntity());
-        int entitiesSize = entityDAO.getAll().size();
-        entityDAO.delete((long) (entitiesSize - 1));
+        E entityAdded = getNewEntity();
+        entityDAO.add(entityAdded);
+
+        List<E> entities = entityDAO.getAll();
+        int entitiesSize = entities.size();
+        long idAdded = entities.indexOf(entityAdded);
+        entityDAO.delete(idAdded);
         int entitiesSizeAfterDelete = entityDAO.getAll().size();
 
         assertEquals(entitiesSize - 1, entitiesSizeAfterDelete);
